@@ -17,11 +17,7 @@ maintenance = { status = "actively-developed" }
 name = "fad"
 path = "./src/main.rs"
 
-exclude = [
-  ".github/*",
-  "img/*",
-  ".pre-commit-config.yaml",
-]
+exclude = [".github","img", ".pre-commit-config.yaml"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
