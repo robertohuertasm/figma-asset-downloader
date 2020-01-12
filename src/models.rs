@@ -34,7 +34,7 @@ pub struct Cli {
     /// Scales to export to: 1, 2, 3, 4
     #[structopt(short = "s", long, default_value = "1")]
     #[serde(default = "default_scale")]
-    pub file_scales: Vec<u8>,
+    pub file_scales: Vec<usize>,
     /// Name of the figma-asset-downloader configuration
     #[structopt(short = "c", long, default_value = "fad.toml")]
     #[serde(default)]
@@ -42,7 +42,7 @@ pub struct Cli {
 }
 
 // methods below have been implemented for default values when using fad.toml
-fn default_scale() -> Vec<u8> {
+fn default_scale() -> Vec<usize> {
     vec![1]
 }
 
@@ -103,13 +103,13 @@ pub struct ImageUrlCollection {
 pub struct Image {
     pub id: String,
     pub name: String,
-    pub scale: u8,
+    pub scale: usize,
     pub format: String,
     pub url: String,
 }
 
 impl Image {
-    pub const fn new(id: String, name: String, scale: u8, format: String, url: String) -> Self {
+    pub const fn new(id: String, name: String, scale: usize, format: String, url: String) -> Self {
         Self {
             id,
             name,

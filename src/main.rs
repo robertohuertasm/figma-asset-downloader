@@ -107,7 +107,7 @@ async fn get_cli() -> Result<Cli, Box<dyn Error>> {
                 e
             })?;
         let cli: Cli = toml::from_str(&config_str).map_err(|e| {
-            // NOTE: this should never happen while the cli option keep being all optional.
+            // NOTE: this should never happen while the cli options keep being all optional.
             // we keep it here just in case something changes in the future.
             println!(
                 "{}  {}",
@@ -172,7 +172,7 @@ async fn get_images(
     frames: &Option<Frames>,
     client: &Client,
     file_id: &str,
-    scales: &[u8],
+    scales: &[usize],
     formats: &[String],
 ) -> Vec<Image> {
     println!("{}  {}", LINK, style("Getting URLs from...").bold().green());
@@ -207,7 +207,7 @@ async fn get_images_url_collection(
     image_ids: &str,
     client: &Client,
     file_id: &str,
-    scale: u8,
+    scale: usize,
     format: &str,
 ) -> Result<ImageUrlCollection, reqwest::Error> {
     let url = format!(
@@ -223,7 +223,7 @@ async fn get_images_url_collection(
         .await
 }
 
-fn to_images(frames: &[Node], urls: &ImageUrlCollection, scale: u8, format: &str) -> Vec<Image> {
+fn to_images(frames: &[Node], urls: &ImageUrlCollection, scale: usize, format: &str) -> Vec<Image> {
     frames
         .iter()
         .filter_map(|f| {

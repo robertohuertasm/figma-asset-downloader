@@ -27,7 +27,6 @@ jobs:
       - name: Run cargo fmt
         run: cargo fmt --all -- --check
       - name: Run cargo clippy
-        continue-on-error: ${{ startsWith(matrix.os, 'windows') }}
         run: cargo clippy --all -- -D clippy::pedantic -D clippy::nursery -D warnings
       # - name: Run tests
       #   continue-on-error: ${{ startsWith(matrix.os, 'windows') }}
