@@ -1,0 +1,34 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        rust: [stable]
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+    steps:
+      - name: Setup Rust
+        uses: hecrj/setup-rust-action@master
+        with:
+          rust-version: ${{ matrix.rust }}
+          components: rustfmt, clippy
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Run cargo fmt
+        run: cargo fmt --all -- --check
+      - name: Run cargo clippy
+        continue-on-error: ${{ startsWith(matrix.os, 'windows') }}
+        run: cargo clippy --all -- -D clippy::pedantic -D clippy::nursery -D warnings
+      # - name: Run tests
+      #   continue-on-error: ${{ startsWith(matrix.os, 'windows') }}
+      #   run: cargo test --verbose

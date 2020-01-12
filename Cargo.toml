@@ -1,0 +1,36 @@
+[package]
+name = "figma-asset-downloader"
+description = "Small utility to help you download Figma assets directly to your computer."
+version = "0.1.0"
+authors = ["Roberto Huertas <roberto.huertas@outlook.com>"]
+license = "MIT"
+edition = "2018"
+repository = "https://github.com/robertohuertasm/figma-asset-downloader"
+readme = "README.md"
+keywords = ["cli", "figma", "assets", "images"]
+categories = ["network-programming"]
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+[[bin]]
+name = "fad"
+path = "./src/main.rs"
+
+exclude = [
+  ".github/*",
+  "img/*",
+  ".pre-commit-config.yaml",
+]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "0.2", features = ["macros", "rt-core", "fs"] }
+futures = "0.3"
+reqwest = { version = "0.10", features = ["json"] }
+structopt = "0.3"
+toml = "0.5"
+console = "0.9"
+serde = {version = "1.0", features = ["derive"]}
+serde_json = "1.0.44"

@@ -1,0 +1,6 @@
+/target
+**/*.rs.bk
+.idea
+.DS_store
+/downloads
+fad.toml
