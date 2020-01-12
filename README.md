@@ -4,6 +4,8 @@
 
 This small utility will download all the images in a specific [Figma](https://www.figma.com/) page to your computer.
 
+![cli demo](./img/demo.gif "cli demo")
+
 ## Motivation
 
 It may be very useful to keep the assets of your app/web up to date. Let's say your Desgin Team puts all the `assets` in a specific page of a [Figma](https://www.figma.com/) document. This utility would automatically fetch all the images from there and keep your assets folder up to date with the latest resources. Nice, isn't it?
