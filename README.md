@@ -2,20 +2,20 @@
 
 [![ActionsStatus](https://github.com/robertohuertasm/figma-asset-downloader/workflows/Build/badge.svg)](https://github.com/robertohuertasm/figma-asset-downloader/actions) [![Crates.io](https://img.shields.io/crates/v/figma-asset-downloader.svg)](https://crates.io/crates/figma-asset-downloader)
 
-This small utility will download all the images in a specific [Figma](https://www.figma.com/) page to your computer.
+Small utility to help you download [Figma](https://www.figma.com/) assets directly to your computer
 
 ![cli demo](./img/demo.gif "cli demo")
 
 ## Motivation
 
-It may be very useful to keep the assets of your app/web up to date. Let's say your Desgin Team puts all the `assets` in a specific page of a [Figma](https://www.figma.com/) document. This utility would automatically fetch all the images from there and keep your assets folder up to date with the latest resources. Nice, isn't it?
+It may be very useful to keep the assets of your app/web up to date. Let's say your Design Team puts all the `assets` in a specific page of a [Figma](https://www.figma.com/) document. This utility would automatically fetch all the images from there and keep your assets folder up to date with the latest resources. Nice, isn't it?
 
 ## Installation
 
 You can compile it yourself:
 
 ```sh
-cargo install cognito-user-reader
+cargo install figma-asset-downloader
 ```
 
 Or you can download an OS specific executable from [GitHub releases](https://github.com/robertohuertasm/figma-asset-downloader/releases) and add it to your path.
@@ -69,7 +69,7 @@ If you need more help just execute `fad -h`.
 
 If you don't want to manually provide the arguments all the time you can also use a configuration file.
 
-By default, if you don't pass any parameter and just call `fad`, it will look for a configuration file called `fad.toml` in the root of the executable.
+By default, if you don't pass any parameter and just call `fad`, it will look for a configuration file called `fad.toml` in the folder where you're using the tool.
 
 This is an example of a `fad.toml` file:
 
@@ -98,4 +98,4 @@ fad -c new-fad-config-file-name.toml
 * `-s`: Scales to export to: 1, 2, 3, 4
 * `-c`: Name of the figma-asset-downloader configuration
 
-**NOTE**: If you provide any arguments to the `cli`, they will take precendence. `-t, -f, -d` are always mandatory if at least any one of them is manually provided.
+**NOTE**: If you provide any arguments to the `cli`, they will take precedence. `-t, -f, -d` are always mandatory if at least any one of them is manually provided.

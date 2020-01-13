@@ -1,28 +1,16 @@
 use crate::models::*;
-use console::{style, Emoji};
+use console::style;
+use emojis::*;
 use futures::prelude::*;
-use reqwest::header;
-use reqwest::Client;
+use reqwest::{header, Client};
 use std::error::Error;
 use std::path::PathBuf;
 use std::time::Instant;
 use structopt::StructOpt;
 use tokio::prelude::*;
 
+mod emojis;
 mod models;
-
-static ERROR: Emoji<'_, '_> = Emoji("\u{26d4} ", "");
-static INFO: Emoji<'_, '_> = Emoji("\u{2139} ", "");
-static ROCKET: Emoji<'_, '_> = Emoji("\u{1F680}", "");
-static GIFT: Emoji<'_, '_> = Emoji("\u{1F381}", "");
-static HEART: Emoji<'_, '_> = Emoji("\u{1F9E1}", "");
-static CRAB: Emoji<'_, '_> = Emoji("\u{1F980}", "");
-static DOWN: Emoji<'_, '_> = Emoji("\u{2B07}", "");
-static FRAME: Emoji<'_, '_> = Emoji("\u{1F307}", "");
-static LINK: Emoji<'_, '_> = Emoji("\u{1F517}", "");
-static THUMB: Emoji<'_, '_> = Emoji("\u{1F44D}", "");
-static FOLDER: Emoji<'_, '_> = Emoji("\u{1F4C1}", "");
-static CLOCK: Emoji<'_, '_> = Emoji("\u{23F2}", "");
 
 #[allow(clippy::filter_map)]
 #[tokio::main]
@@ -244,7 +232,7 @@ async fn download_images(
     images: Vec<Image>,
     client: &Client,
     download_path: &PathBuf,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<(), Box<dyn Error>> {
     println!(
         "{}  {}",
         DOWN,
@@ -261,7 +249,7 @@ async fn download_images(
             let mut file =
                 tokio::fs::File::create(&path.join(format!("{}.{}", i.name, i.format))).await?;
             file.write_all(&bytes).await?;
-            Ok::<(), Box<dyn std::error::Error>>(())
+            Ok::<(), Box<dyn Error>>(())
         }
     });
 
