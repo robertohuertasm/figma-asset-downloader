@@ -238,19 +238,17 @@ async fn download_images(
         DOWN,
         style("Downloading images...").bold().green()
     );
-    let futures = images.into_iter().map(move |i| {
-        async move {
-            let bytes = client.get(&i.url).send().await?.bytes().await?;
-            let path = if i.scale == 1 {
-                download_path.to_owned()
-            } else {
-                download_path.join(format!("{}.0x", i.scale))
-            };
-            let mut file =
-                tokio::fs::File::create(&path.join(format!("{}.{}", i.name, i.format))).await?;
-            file.write_all(&bytes).await?;
-            Ok::<(), Box<dyn Error>>(())
-        }
+    let futures = images.into_iter().map(move |i| async move {
+        let bytes = client.get(&i.url).send().await?.bytes().await?;
+        let path = if i.scale == 1 {
+            download_path.to_owned()
+        } else {
+            download_path.join(format!("{}.0x", i.scale))
+        };
+        let mut file =
+            tokio::fs::File::create(&path.join(format!("{}.{}", i.name, i.format))).await?;
+        file.write_all(&bytes).await?;
+        Ok::<(), Box<dyn Error>>(())
     });
 
     future::join_all(futures).await;
