@@ -27,7 +27,7 @@ pub struct Cli {
     #[structopt(short, long, default_value = "downloads")]
     #[serde(default = "default_path")]
     pub path: String,
-    /// Extensions to export to in case there's no extension in the name of the asset: "png", "svg", "jpeg", default: png
+    /// Extensions to export to in case there's no extension in the name of the asset: "png", "svg", "jpg", default: png
     #[structopt(short = "e", long, default_value = "png")]
     #[serde(default = "default_format")]
     pub file_extensions: Vec<String>,

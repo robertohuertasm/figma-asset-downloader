@@ -140,7 +140,7 @@ dependencies = [
 
 [[package]]
 name = "figma-asset-downloader"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "console 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",

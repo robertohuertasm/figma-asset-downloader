@@ -165,7 +165,7 @@ async fn get_frames(
     Ok(frames)
 }
 
-async fn get_images(
+async fn get_images<'a>(
     frames: &Option<Frames>,
     client: &Client,
     file_id: &str,
@@ -191,7 +191,7 @@ async fn get_images(
                     .and_then(std::ffi::OsStr::to_str)
                 {
                     Some("png") => png_images.push(id),
-                    Some("jpeg") => jpg_images.push(id),
+                    Some("jpeg") | Some("jpg") => jpg_images.push(id),
                     Some("pdf") => pdf_images.push(id),
                     Some("svg") => svg_images.push(id),
                     _ => free_images.push(id),
@@ -206,58 +206,24 @@ async fn get_images(
         let pdf_image_ids = pdf_images.join(",");
 
         let mut futures = vec![];
+
+        let mut add_future_images = |image_ids: &'a str, format, scale| {
+            if !image_ids.is_empty() {
+                futures.push(
+                    get_images_url_collection(image_ids, client, file_id, scale, format)
+                        .map_ok(move |urls| to_images(frames, &urls, scale, format)),
+                );
+            }
+        };
+
         for scale in scales {
-            if !png_image_ids.is_empty() {
-                futures.push(future_images(
-                    &png_image_ids,
-                    client,
-                    file_id,
-                    frames,
-                    *scale,
-                    "png",
-                ));
-            }
-            if !jpg_image_ids.is_empty() {
-                futures.push(future_images(
-                    &jpg_image_ids,
-                    client,
-                    file_id,
-                    frames,
-                    *scale,
-                    "jpg",
-                ));
-            }
-            if !svg_image_ids.is_empty() {
-                futures.push(future_images(
-                    &svg_image_ids,
-                    client,
-                    file_id,
-                    frames,
-                    *scale,
-                    "svg",
-                ));
-            }
-            if !pdf_image_ids.is_empty() {
-                futures.push(future_images(
-                    &pdf_image_ids,
-                    client,
-                    file_id,
-                    frames,
-                    *scale,
-                    "pdf",
-                ));
-            }
+            add_future_images(&png_image_ids, "png", *scale);
+            add_future_images(&jpg_image_ids, "jpg", *scale);
+            add_future_images(&svg_image_ids, "svg", *scale);
+            add_future_images(&pdf_image_ids, "pdf", *scale);
+
             for format in formats {
-                if !free_image_ids.is_empty() {
-                    futures.push(future_images(
-                        &free_image_ids,
-                        client,
-                        file_id,
-                        frames,
-                        *scale,
-                        format,
-                    ));
-                }
+                add_future_images(&free_image_ids, format, *scale);
             }
         }
 
@@ -270,18 +236,6 @@ async fn get_images(
     } else {
         vec![]
     }
-}
-
-fn future_images<'a>(
-    image_ids: &'a str,
-    client: &'a Client,
-    file_id: &'a str,
-    frames: &'a [Node],
-    scale: usize,
-    format: &'a str,
-) -> impl Future<Output = Result<Vec<Image>, reqwest::Error>> + 'a {
-    get_images_url_collection(image_ids, client, file_id, scale, format)
-        .map_ok(move |urls| to_images(frames, &urls, scale, format))
 }
 
 async fn get_images_url_collection(
