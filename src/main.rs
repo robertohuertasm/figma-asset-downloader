@@ -278,7 +278,7 @@ fn to_images(frames: &[Node], urls: &ImageUrlCollection, scale: usize, format: &
 
 fn remove_extension(filename: &str) -> String {
     Path::new(filename)
-        .file_name()
+        .file_stem()
         .and_then(std::ffi::OsStr::to_str)
         .expect("Some unexpected error happened removing the extension of an image")
         .to_string()
