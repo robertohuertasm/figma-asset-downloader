@@ -50,12 +50,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 FOLDER,
                 style("Creating the folder structure...").bold().green()
             );
-            future::join_all(
-                scales
-                    .iter()
-                    .filter(|&s| *s > 1)
-                    .map(|s| tokio::fs::create_dir_all(download_path.join(format!("{}.0x", s)))),
-            )
+            future::join_all(scales.iter().enumerate().map(|(i, s)| {
+                if i == 0 {
+                    tokio::fs::create_dir_all(download_path.clone())
+                } else {
+                    tokio::fs::create_dir_all(download_path.join(format!("{}.0x", s)))
+                }
+            }))
             .await;
             download_images(images, &client, &download_path).await?;
         }
