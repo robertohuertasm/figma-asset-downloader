@@ -27,10 +27,14 @@ pub struct Cli {
     #[structopt(short, long, default_value = "downloads")]
     #[serde(default = "default_path")]
     pub path: String,
-    /// Extensions to export to: "png", "svg", "jpeg", default: png
+    /// Extensions to export to in case there's no extension in the name of the asset: "png", "svg", "jpeg", default: png
     #[structopt(short = "e", long, default_value = "png")]
     #[serde(default = "default_format")]
     pub file_extensions: Vec<String>,
+    /// If true, file extensions will prevail over naming convention (asset_name.jpg)
+    #[structopt(short = "r", long)]
+    #[serde(default = "default_force_file_extensions")]
+    pub force_file_extensions: bool,
     /// Scales to export to: 1, 2, 3, 4
     #[structopt(short = "s", long, default_value = "1")]
     #[serde(default = "default_scale")]
@@ -52,6 +56,10 @@ fn default_format() -> Vec<String> {
 
 fn default_path() -> String {
     "downloads".to_string()
+}
+
+const fn default_force_file_extensions() -> bool {
+    false
 }
 // end of default values for serde
 

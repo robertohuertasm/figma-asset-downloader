@@ -63,6 +63,10 @@ If you want to change this, you can use any of the other options that this `cli`
 fad [-t personal-access-token] [-f file-id] [-d document-id] [-p download-folder-name] [-s 1 2 3 4] [-e png svg jpeg pdf] [-c configuration-file]
 ```
 
+Regarding `image format`, you can decide from your Figma file which format any of the assets will be created in. For instance, if you want some asset to be downloaded only in `jpeg` format regardless of what you choose with the `-e` CLI parameter, you must add a suffix to your asset in figma containing the extension: `your_asset_name.jpeg`.
+
+If you happen to be following this convention while creating your Figma documents but you still want to download the images in a specific format then you must use the `--force-file-extensions` flag.
+
 If you need more help just execute `fad -h`.
 
 ## Configuration file
@@ -94,7 +98,8 @@ fad -c new-fad-config-file-name.toml
 * `-f`: File id (www.figma.com/file/FILE_ID/title?node-id=DOCUMENT_ID)
 * `-d`: Document id (www.figma.com/file/FILE_ID/title?node-id=DOCUMENT_ID)
 * `-p`: Path where assets will be downloaded
-* `-e`: Extensions to export to: "png", "svg", "jpeg", default: png
+* `-e`: Extensions to export to in case there's no extension in the name of the asset: "png", "svg", "jpeg", default: png
+* `-r`: If true, file extensions will prevail over naming convention (asset_name.jpg)
 * `-s`: Scales to export to: 1, 2, 3, 4
 * `-c`: Name of the figma-asset-downloader configuration
 

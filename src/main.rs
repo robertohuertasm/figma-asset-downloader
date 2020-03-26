@@ -4,7 +4,7 @@ use emojis::*;
 use futures::prelude::*;
 use reqwest::{header, Client};
 use std::error::Error;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::Instant;
 use structopt::StructOpt;
 use tokio::prelude::*;
@@ -23,11 +23,20 @@ async fn main() -> Result<(), Box<dyn Error>> {
     {
         let scales = cli.file_scales;
         let formats = cli.file_extensions;
+        let force_extensions = cli.force_file_extensions;
         let download_path = std::env::current_dir().unwrap().join(&cli.path);
 
         let client = get_client(&token)?;
         let frames = get_frames(&file_id, &document_id, &client).await?;
-        let images = get_images(&frames, &client, &file_id, &scales, &formats).await;
+        let images = get_images(
+            &frames,
+            &client,
+            &file_id,
+            &scales,
+            &formats,
+            force_extensions,
+        )
+        .await;
 
         if images.is_empty() {
             println!(
@@ -162,21 +171,93 @@ async fn get_images(
     file_id: &str,
     scales: &[usize],
     formats: &[String],
+    force_extensions: bool,
 ) -> Vec<Image> {
     println!("{}  {}", LINK, style("Getting URLs from...").bold().green());
     if let Some(frames) = frames {
-        let image_ids = frames
-            .iter()
-            .map(|n| n.id.as_str())
-            .collect::<Vec<_>>()
-            .join(",");
+        let mut free_images = vec![];
+        let mut png_images = vec![];
+        let mut jpg_images = vec![];
+        let mut svg_images = vec![];
+        let mut pdf_images = vec![];
+
+        for frame in frames {
+            let id = frame.id.as_str();
+            if force_extensions {
+                free_images.push(id);
+            } else {
+                match Path::new(&frame.name)
+                    .extension()
+                    .and_then(std::ffi::OsStr::to_str)
+                {
+                    Some("png") => png_images.push(id),
+                    Some("jpeg") => jpg_images.push(id),
+                    Some("pdf") => pdf_images.push(id),
+                    Some("svg") => svg_images.push(id),
+                    _ => free_images.push(id),
+                }
+            }
+        }
+
+        let free_image_ids = free_images.join(",");
+        let png_image_ids = png_images.join(",");
+        let jpg_image_ids = jpg_images.join(",");
+        let svg_image_ids = svg_images.join(",");
+        let pdf_image_ids = pdf_images.join(",");
 
         let mut futures = vec![];
         for scale in scales {
+            if !png_image_ids.is_empty() {
+                futures.push(future_images(
+                    &png_image_ids,
+                    client,
+                    file_id,
+                    frames,
+                    *scale,
+                    "png",
+                ));
+            }
+            if !jpg_image_ids.is_empty() {
+                futures.push(future_images(
+                    &jpg_image_ids,
+                    client,
+                    file_id,
+                    frames,
+                    *scale,
+                    "jpg",
+                ));
+            }
+            if !svg_image_ids.is_empty() {
+                futures.push(future_images(
+                    &svg_image_ids,
+                    client,
+                    file_id,
+                    frames,
+                    *scale,
+                    "svg",
+                ));
+            }
+            if !pdf_image_ids.is_empty() {
+                futures.push(future_images(
+                    &pdf_image_ids,
+                    client,
+                    file_id,
+                    frames,
+                    *scale,
+                    "pdf",
+                ));
+            }
             for format in formats {
-                let fim = get_images_url_collection(&image_ids, client, file_id, *scale, format)
-                    .map_ok(move |urls| to_images(frames, &urls, *scale, format));
-                futures.push(fim);
+                if !free_image_ids.is_empty() {
+                    futures.push(future_images(
+                        &free_image_ids,
+                        client,
+                        file_id,
+                        frames,
+                        *scale,
+                        format,
+                    ));
+                }
             }
         }
 
@@ -189,6 +270,18 @@ async fn get_images(
     } else {
         vec![]
     }
+}
+
+fn future_images<'a>(
+    image_ids: &'a str,
+    client: &'a Client,
+    file_id: &'a str,
+    frames: &'a [Node],
+    scale: usize,
+    format: &'a str,
+) -> impl Future<Output = Result<Vec<Image>, reqwest::Error>> + 'a {
+    get_images_url_collection(image_ids, client, file_id, scale, format)
+        .map_ok(move |urls| to_images(frames, &urls, scale, format))
 }
 
 async fn get_images_url_collection(
@@ -218,7 +311,7 @@ fn to_images(frames: &[Node], urls: &ImageUrlCollection, scale: usize, format: &
             urls.images.get(&f.id).map(|url| {
                 Image::new(
                     f.id.clone(),
-                    f.name.clone(),
+                    remove_extension(&f.name),
                     scale.to_owned(),
                     format.to_owned(),
                     url.to_owned(),
@@ -226,6 +319,14 @@ fn to_images(frames: &[Node], urls: &ImageUrlCollection, scale: usize, format: &
             })
         })
         .collect()
+}
+
+fn remove_extension(filename: &str) -> String {
+    Path::new(filename)
+        .file_name()
+        .and_then(std::ffi::OsStr::to_str)
+        .expect("Some unexpected error happened removing the extension of an image")
+        .to_string()
 }
 
 async fn download_images(

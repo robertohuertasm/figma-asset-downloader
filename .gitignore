@@ -4,3 +4,5 @@
 .DS_store
 /downloads
 fad.toml
+assets/images
+.python-version
