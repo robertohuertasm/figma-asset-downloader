@@ -24,7 +24,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let scales = cli.file_scales;
         let formats = cli.file_extensions;
         let force_extensions = cli.force_file_extensions;
-        let download_path = std::env::current_dir().unwrap().join(&cli.path);
+        let download_path = std::env::current_dir()?.join(&cli.path);
 
         let client = get_client(&token)?;
         let frames = get_frames(&file_id, &document_id, &client).await?;
@@ -58,7 +58,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 }
             }))
             .await;
-            download_images(images, &client, &download_path).await?;
+            download_images(
+                images,
+                &client,
+                &download_path,
+                cli.opt_png_level,
+                cli.opt_jpg_level,
+            )
+            .await?;
         }
         println!(
             "{}  {} {}  {}  {}",
@@ -266,7 +273,7 @@ fn to_images(frames: &[Node], urls: &ImageUrlCollection, scale: usize, format: &
             urls.images.get(&f.id).map(|url| {
                 Image::new(
                     f.id.clone(),
-                    remove_extension(&f.name),
+                    &f.name,
                     scale.to_owned(),
                     format.to_owned(),
                     url.to_owned(),
@@ -276,18 +283,12 @@ fn to_images(frames: &[Node], urls: &ImageUrlCollection, scale: usize, format: &
         .collect()
 }
 
-fn remove_extension(filename: &str) -> String {
-    Path::new(filename)
-        .file_stem()
-        .and_then(std::ffi::OsStr::to_str)
-        .expect("Some unexpected error happened removing the extension of an image")
-        .to_string()
-}
-
 async fn download_images(
     images: Vec<Image>,
     client: &Client,
     download_path: &PathBuf,
+    opt_png_level: Option<u8>,
+    opt_jpg_level: Option<u8>,
 ) -> Result<(), Box<dyn Error>> {
     println!(
         "{}  {}",
@@ -301,12 +302,47 @@ async fn download_images(
         } else {
             download_path.join(format!("{}.0x", i.scale))
         };
-        let mut file =
-            tokio::fs::File::create(&path.join(format!("{}.{}", i.name, i.format))).await?;
+        let final_path = path.join(format!("{}.{}", i.name, i.format));
+        let mut file = tokio::fs::File::create(&final_path).await?;
         file.write_all(&bytes).await?;
+        if let Err(e) = optimize_image(&final_path, &i.format, opt_png_level, opt_jpg_level) {
+            println!(
+                "{} Error optimizing image {:?} => {:?}",
+                ERROR, final_path, e
+            );
+        }
         Ok::<(), Box<dyn Error>>(())
     });
 
     future::join_all(futures).await;
+    Ok(())
+}
+
+fn optimize_image(
+    path: &Path,
+    extension: &str,
+    opt_png_level: Option<u8>,
+    opt_jpg_level: Option<u8>,
+) -> Result<(), Box<dyn Error>> {
+    match extension {
+        "jpg" => {
+            if let Some(lvl) = opt_jpg_level {
+                let img = image::open(path)?;
+                let dim = image::image_dimensions(path)?;
+                let mut fw = std::fs::File::create(path)?;
+                let mut enc = image::jpeg::JPEGEncoder::new_with_quality(&mut fw, lvl);
+                enc.encode(&img.to_bytes(), dim.0, dim.1, img.color())?;
+            }
+        }
+        "png" => {
+            if let Some(lvl) = opt_png_level {
+                let inf = oxipng::InFile::from(path);
+                let ouf = oxipng::OutFile::Path(Some(path.into()));
+                let opts = oxipng::Options::from_preset(lvl);
+                oxipng::optimize(&inf, &ouf, &opts)?;
+            }
+        }
+        _ => (),
+    }
     Ok(())
 }

@@ -92,6 +92,10 @@ You can use another name but then you'll have to specify it every time you call 
 fad -c new-fad-config-file-name.toml
 ```
 
+## Image optimization
+
+If you want to further optimize the images exported from `Figma` this CLI supports optimization for `jpeg` and `png` formats. You just have to use the `--opt-jpg-level` and `--opt-png-level` options. Bear in mind that if you choose to optimize the process will take a while.
+
 ## Options
 
 * `-t`: Figma Personal Access Token
@@ -102,5 +106,7 @@ fad -c new-fad-config-file-name.toml
 * `-r`: If true, file extensions will prevail over naming convention (asset_name.jpg)
 * `-s`: Scales to export to: 1, 2, 3, 4
 * `-c`: Name of the figma-asset-downloader configuration
+* `--opt-jpg-level`: Optimizes jpg images. You can set a level from 1 to 100. 80 recommended
+* `--opt-png-level`: Optimizes png images. You can set a level from 1 to 6. 2 to 4 recommended
 
 **NOTE**: If you provide any arguments to the `cli`, they will take precedence. `-t, -f, -d` are always mandatory if at least any one of them is manually provided.

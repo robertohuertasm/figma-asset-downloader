@@ -1,6 +1,6 @@
 #![allow(clippy::non_ascii_literal)]
 use serde::Deserialize;
-use std::collections::HashMap;
+use std::{collections::HashMap, path::Path};
 use structopt::StructOpt;
 
 type ImageId = String;
@@ -43,6 +43,12 @@ pub struct Cli {
     #[structopt(short = "c", long, default_value = "fad.toml")]
     #[serde(default)]
     pub config_path: String,
+    /// Optimizes png images. You can set a level from 1 to 6. 2 to 4 recommended.
+    #[structopt(long)]
+    pub opt_png_level: Option<u8>,
+    /// Optimizes jpg images. You can set a level from 1 to 100. 80 recommended.
+    #[structopt(long)]
+    pub opt_jpg_level: Option<u8>,
 }
 
 // methods below have been implemented for default values when using fad.toml
@@ -117,13 +123,21 @@ pub struct Image {
 }
 
 impl Image {
-    pub const fn new(id: String, name: String, scale: usize, format: String, url: String) -> Self {
+    pub fn new(id: String, name: &str, scale: usize, format: String, url: String) -> Self {
         Self {
             id,
-            name,
+            name: remove_extension(name),
             scale,
             format,
             url,
         }
     }
+}
+
+fn remove_extension(filename: &str) -> String {
+    Path::new(filename)
+        .file_stem()
+        .and_then(std::ffi::OsStr::to_str)
+        .expect("Some unexpected error happened removing the extension of an image")
+        .to_string()
 }
