@@ -302,7 +302,7 @@ async fn download_images(
         } else {
             download_path.join(format!("{}.0x", i.scale))
         };
-        let final_path = path.join(format!("{}.{}", i.name, i.format));
+        let final_path = path.join(format!("{}.{}", i.name.trim(), i.format));
         let mut file = tokio::fs::File::create(&final_path).await?;
         file.write_all(&bytes).await?;
         if let Err(e) = optimize_image(&final_path, &i.format, opt_png_level, opt_jpg_level) {
