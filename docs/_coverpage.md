@@ -7,7 +7,7 @@
 - Simple to use
 - Support for Linux, Mac OS and Windows
 - Improve the integration between your design and development teams
-- Humbly written with [Rust](https://rust-lang.org)
+- Humbly written with **[Rust](https://rust-lang.org)**
 
 [GitHub](https://github.com/robertohuertasm/figma-asset-downloader/)
 [Get Started](#home)
