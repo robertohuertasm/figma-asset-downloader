@@ -1,5 +1,5 @@
 
-<div align="center"><a href="https://robertohuertasm.github.io/figma-asset-downloader"><img align="center" src="./docs/img/logo.svg" /></a></div>
+<div align="center"><a href="https://robertohuertasm.github.io/figma-asset-downloader"><img align="center" src="./docs/img/logo.svg" width="40%" /></a></div>
 <h1 align="center">Figma Asset Downloader</h1>
 
 <div align="center">
