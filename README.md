@@ -8,6 +8,6 @@
 
 Small utility to help you optimize & download [Figma](https://www.figma.com/) assets directly to your computer
 
-Check out the [documentation](https://robertohuertasm.github.io/figma-asset-downloader) and [get started](https://robertohuertasm.github.io/figma-asset-downloader).
+Check out the [documentation](https://robertohuertasm.github.io/figma-asset-downloader) and [get started](https://robertohuertasm.github.io/figma-asset-downloader) or learn more about [the motivations for building this tool](https://dev.to/robertohuertasm/sync-your-figma-assets-with-your-dev-environment-13bd).
 
 </div>

@@ -16,6 +16,8 @@ The tool is **open source** and has a **MIT license** so feel free to use it, mo
 
 I hope it can be useful for your team, too! :wink:
 
+You can learn more about the process of creation of this tool in this [dev.to post](https://dev.to/robertohuertasm/sync-your-figma-assets-with-your-dev-environment-13bd) I wrote.
+
 ## Installation
 
 You can currently get artifacts for `Windows`, `MacOS` & `Ubuntu`. 
