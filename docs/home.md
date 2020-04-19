@@ -20,7 +20,7 @@ I hope it can be useful for your team, too! :wink:
 
 You can currently get artifacts for `Windows`, `MacOS` & `Ubuntu`. 
 
-Just download the your preferred release from [GitHub releases](https://github.com/robertohuertasm/figma-asset-downloader/releases), unzip it and add the `fad` executable to your path.
+Just download your preferred release from [GitHub releases](https://github.com/robertohuertasm/figma-asset-downloader/releases), unzip it and add the `fad` executable to your path.
 
 You can compile it yourself if you need to use it in another `OS`:
 
@@ -48,7 +48,7 @@ You should be seeing something similar to this:
 
 `https://www.figma.com/file/FILE_ID/file_title?node-id=DOCUMENT_ID`
 
-Just get that pieces of information and use them from the command line. 
+Just get that pieces of information and use them from the command line.
 
 Bear in mind that the `document-id` may be url-encoded. Don't use it like that. Substitute `%3A` for `:`.
 
@@ -71,7 +71,7 @@ fad [-t personal-access-token] [-f file-id] [-d document-id] [-p download-folder
 
 ## Configuration file
 
-If you don't want to manually provide the arguments every time you use the `clie` you can also use a configuration file.
+If you don't want to manually provide the arguments every time you use the `cli` you can also use a configuration file.
 
 By default, if you don't pass any parameter and just call `fad`, the tool will look for a configuration file called `fad.toml` in the root folder where you're executing the tool. If it can't find it, it will error.
 
