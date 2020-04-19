@@ -2,7 +2,7 @@
 
 # Figma Asset Downloader <small>0.3.1</small>
 
-> Small utility to help you download Figma assets directly to your computer.
+> Small utility to help you optimize & download Figma assets directly to your computer.
 
 - Simple to use
 - Support for Linux, Mac OS and Windows
