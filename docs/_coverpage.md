@@ -1,4 +1,4 @@
-![logo](img/logo.png)
+![logo](img/logo.svg)
 
 # Figma Asset Downloader <small>0.3.1</small>
 
