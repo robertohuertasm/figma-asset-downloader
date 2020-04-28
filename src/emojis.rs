@@ -12,3 +12,4 @@ pub static LINK: Emoji<'_, '_> = Emoji("\u{1F517}", "");
 pub static THUMB: Emoji<'_, '_> = Emoji("\u{1F44D}", "");
 pub static FOLDER: Emoji<'_, '_> = Emoji("\u{1F4C1}", "");
 pub static CLOCK: Emoji<'_, '_> = Emoji("\u{23F2}", "");
+pub static PLANT: Emoji<'_, '_> = Emoji("\u{1F331}", "");
