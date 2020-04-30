@@ -27,9 +27,9 @@ impl Error for ManifestError {
 impl Display for ManifestError {
     fn fmt(&self, f: &mut Formatter) -> Result<(), core::fmt::Error> {
         match self {
-            ManifestError::Generic => write!(f, "Generic Error"),
-            ManifestError::Parse(s) => write!(f, "Error trying to parse the manifest: {}", s),
-            ManifestError::IO(s) => write!(f, "Error trying to read a file/directory: {}", s),
+            Self::Generic => write!(f, "Generic Error"),
+            Self::Parse(s) => write!(f, "Error trying to parse the manifest: {}", s),
+            Self::IO(s) => write!(f, "Error trying to read a file/directory: {}", s),
         }
     }
 }
