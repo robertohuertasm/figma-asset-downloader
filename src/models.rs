@@ -35,7 +35,7 @@ pub struct Cli {
     #[structopt(short = "r", long)]
     #[serde(default = "default_force_file_extensions")]
     pub force_file_extensions: bool,
-    /// Scales to export to: 1, 2, 3, 4
+    /// Scales to export to: 1, 2, 3, 4, default: 1
     #[structopt(short = "s", long, default_value = "1")]
     #[serde(default = "default_scale")]
     pub file_scales: Vec<usize>,
@@ -49,6 +49,48 @@ pub struct Cli {
     /// Optimizes jpg images. You can set a level from 1 to 100. 80 recommended.
     #[structopt(long)]
     pub opt_jpg_level: Option<u8>,
+    #[structopt(subcommand)]
+    pub subcommands: Option<SubCommands>,
+}
+
+#[derive(StructOpt, Debug, PartialEq, Deserialize)]
+pub enum SubCommands {
+    #[structopt(about = "Validates the result of the import with a manifest (fad_manifest.toml)")]
+    ValidateManifest,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct Manifest {
+    /// Files that must be imported. Don't use extension in case you want to use [file_extensions] arguments.
+    pub files: Vec<String>,
+    /// Extensions to export to in case there's no extension in the name of the asset: "png", "svg", "jpg", default: png
+    #[serde(default = "default_format")]
+    pub file_extensions: Vec<String>,
+    /// Scales to export to: 1, 2, 3, 4, default: 1
+    #[serde(default = "default_scale")]
+    pub file_scales: Vec<usize>,
+    /// Path where assets will be downloaded
+    #[serde(default = "default_path")]
+    pub path: String,
+}
+
+impl Default for Manifest {
+    fn default() -> Self {
+        Self {
+            files: vec![],
+            file_extensions: default_format(),
+            file_scales: default_scale(),
+            path: default_path(),
+        }
+    }
+}
+
+impl Manifest {
+    #[cfg(test)]
+    pub fn with_files(mut self, files: Vec<String>) -> Self {
+        self.files = files;
+        self
+    }
 }
 
 // methods below have been implemented for default values when using fad.toml

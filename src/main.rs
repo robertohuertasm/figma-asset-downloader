@@ -1,30 +1,56 @@
+#![allow(clippy::wildcard_imports)]
 use crate::models::*;
 use console::style;
 use emojis::*;
 use futures::prelude::*;
+use manifest_checker::{ManifestChecker, TokioManifestReader};
 use reqwest::{header, Client};
-use std::error::Error;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 use structopt::StructOpt;
 use tokio::prelude::*;
 
 mod emojis;
+mod manifest_checker;
 mod models;
 
 #[allow(clippy::filter_map)]
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> anyhow::Result<()> {
     let start = Instant::now();
     let cli = get_cli().await?;
 
-    if let (Some(token), Some(file_id), Some(document_id)) =
+    let download_path: PathBuf = std::env::current_dir()?.join(&cli.path);
+
+    if cli.subcommands.is_some() {
+        // we have only one subcommand so no need to get more details than this
+        let manifest_path = PathBuf::from("fad_manifest.toml");
+        let manifest_checker =
+            ManifestChecker::<TokioManifestReader>::with_tokio_reader(&manifest_path);
+        let manifest_result = manifest_checker.check().await;
+        match manifest_result {
+            Ok(manifest) => {
+                manifest.print_info();
+            }
+            Err(e) => {
+                println!(
+                    "{} {}",
+                    ERROR,
+                    style(format!(
+                        "Some error occurred while trying to work with the manifest:\n\n{}",
+                        e
+                    ))
+                    .bold()
+                    .red(),
+                );
+            }
+        }
+    } else if let (Some(token), Some(file_id), Some(document_id)) =
         (cli.personal_access_token, cli.file_id, cli.document_id)
     {
         let scales = cli.file_scales;
         let formats = cli.file_extensions;
         let force_extensions = cli.force_file_extensions;
-        let download_path = std::env::current_dir()?.join(&cli.path);
 
         let client = get_client(&token)?;
         let frames = get_frames(&file_id, &document_id, &client).await?;
@@ -94,9 +120,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-async fn get_cli() -> Result<Cli, Box<dyn Error>> {
+async fn get_cli() -> anyhow::Result<Cli> {
     let cli: Cli = Cli::from_args();
-    if cli.personal_access_token.is_some() {
+    if cli.personal_access_token.is_some() || cli.subcommands.is_some() {
         Ok(cli)
     } else {
         let config_str = tokio::fs::read_to_string(&cli.config_path)
@@ -141,7 +167,7 @@ async fn get_frames(
     file_id: &str,
     document_id: &str,
     client: &Client,
-) -> Result<Option<Frames>, Box<dyn Error>> {
+) -> anyhow::Result<Option<Frames>> {
     let url = format!(
         "https://api.figma.com/v1/files/{}/nodes?ids={}",
         file_id, document_id,
@@ -289,7 +315,7 @@ async fn download_images(
     download_path: &PathBuf,
     opt_png_level: Option<u8>,
     opt_jpg_level: Option<u8>,
-) -> Result<(), Box<dyn Error>> {
+) -> anyhow::Result<()> {
     println!(
         "{}  {}",
         DOWN,
@@ -311,7 +337,7 @@ async fn download_images(
                 ERROR, final_path, e
             );
         }
-        Ok::<(), Box<dyn Error>>(())
+        Ok::<(), anyhow::Error>(())
     });
 
     future::join_all(futures).await;
@@ -323,7 +349,7 @@ fn optimize_image(
     extension: &str,
     opt_png_level: Option<u8>,
     opt_jpg_level: Option<u8>,
-) -> Result<(), Box<dyn Error>> {
+) -> anyhow::Result<()> {
     match extension {
         "jpg" => {
             if let Some(lvl) = opt_jpg_level {
