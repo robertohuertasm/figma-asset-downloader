@@ -56,7 +56,11 @@ pub struct Cli {
 #[derive(StructOpt, Debug, PartialEq, Deserialize)]
 pub enum SubCommands {
     #[structopt(about = "Validates the result of the import with a manifest (fad_manifest.toml)")]
-    ValidateManifest,
+    ValidateManifest {
+        #[structopt(short = "p", long, default_value = "fad_manifest.toml")]
+        #[serde(default)]
+        path: String,
+    },
 }
 
 #[derive(Debug, Deserialize, Clone)]

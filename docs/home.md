@@ -126,7 +126,7 @@ In order to verify that everything went as expected once the import process has 
 
 At the **same level in the directory tree** that you've created your configuration file (*fad.toml*), create a file called `fad_manifest.toml`.
 
-> **IMPORTANT**: This file does not support any other name, so be sure to named like that. :wink:
+Note that you can use the name you want. In that case, you can specify the `-p` or `--path` parameter with the proper `path` to the manifest.
 
 ### Manifest structure
 
@@ -146,7 +146,7 @@ There are, though, several things to note.
 
 #### Manifest defaults
 
-Note that `path`, `file_extensions` and `file_scales` are optional and if not informed will use their defaults: `downloads` folder for `path`, `png` for `file_extensions` and `[1]` for `file_scales. 
+Note that `path`, `file_extensions` and `file_scales` are optional and if not informed will use their defaults: `downloads` folder for `path`, `png` for `file_extensions` and `[1]` for `file_scales.
 
 Check out [Defaults section](#defaults) for more information.
 
@@ -163,7 +163,7 @@ You need to put all the file names you're expecting to have in your assets folde
 In order for the validation to take place, just execute this command in your terminal:
 
 ```sh
-fad validate-manifest
+fad validate-manifest [-p path/to/fad_manifest.toml]
 ```
 
 You will obtain a list of `missing` and `new` files, similar to this one:

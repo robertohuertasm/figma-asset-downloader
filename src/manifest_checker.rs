@@ -105,7 +105,7 @@ impl<T: ManifestReader> ManifestChecker<T> {
 
     pub async fn check(&self) -> Result<ManifestInfo, ManifestError> {
         let manifest = self.reader.read_manifest().await?;
-        let assets_dir_path = PathBuf::from(&manifest.path);
+        let assets_dir_path = std::env::current_dir()?.join(&manifest.path);
         let assets = self.reader.read_assets(&assets_dir_path).await?;
         Ok(Self::compare_results(manifest, assets))
     }
@@ -154,10 +154,13 @@ impl<T: ManifestReader> ManifestChecker<T> {
             }
         }
 
-        let missing_assets = manifest_map
+        let mut missing_assets = manifest_map
             .into_iter()
             .filter_map(|(key, val)| if val { None } else { Some(key) })
             .collect::<Vec<_>>();
+
+        missing_assets.sort();
+        new_assets.sort();
 
         ManifestInfo::default()
             .with_new_assets(new_assets)

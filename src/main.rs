@@ -20,11 +20,9 @@ async fn main() -> anyhow::Result<()> {
     let start = Instant::now();
     let cli = get_cli().await?;
 
-    let download_path: PathBuf = std::env::current_dir()?.join(&cli.path);
-
-    if cli.subcommands.is_some() {
+    if let Some(SubCommands::ValidateManifest { path }) = cli.subcommands {
         // we have only one subcommand so no need to get more details than this
-        let manifest_path = PathBuf::from("fad_manifest.toml");
+        let manifest_path: PathBuf = std::env::current_dir()?.join(&path);
         let manifest_checker =
             ManifestChecker::<TokioManifestReader>::with_tokio_reader(&manifest_path);
         let manifest_result = manifest_checker.check().await;
@@ -51,6 +49,7 @@ async fn main() -> anyhow::Result<()> {
         let scales = cli.file_scales;
         let formats = cli.file_extensions;
         let force_extensions = cli.force_file_extensions;
+        let download_path: PathBuf = std::env::current_dir()?.join(&cli.path);
 
         let client = get_client(&token)?;
         let frames = get_frames(&file_id, &document_id, &client).await?;
