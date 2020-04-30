@@ -36,13 +36,13 @@ impl Display for ManifestError {
 
 impl From<toml::de::Error> for ManifestError {
     fn from(error: toml::de::Error) -> Self {
-        ManifestError::Parse(error.to_string())
+        Self::Parse(error.to_string())
     }
 }
 
 impl From<std::io::Error> for ManifestError {
     fn from(error: std::io::Error) -> Self {
-        ManifestError::IO(error.to_string())
+        Self::IO(error.to_string())
     }
 }
 
