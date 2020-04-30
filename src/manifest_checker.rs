@@ -13,9 +13,9 @@ use std::{
 
 #[derive(Debug, Clone)]
 pub enum ManifestError {
-    GenericError,
-    ParseError(String),
-    IOError(String),
+    Generic,
+    Parse(String),
+    IO(String),
 }
 
 impl Error for ManifestError {
@@ -27,22 +27,22 @@ impl Error for ManifestError {
 impl Display for ManifestError {
     fn fmt(&self, f: &mut Formatter) -> Result<(), core::fmt::Error> {
         match self {
-            ManifestError::GenericError => write!(f, "Generic Error"),
-            ManifestError::ParseError(s) => write!(f, "Error trying to parse the manifest: {}", s),
-            ManifestError::IOError(s) => write!(f, "Error trying to read a file/directory: {}", s),
+            ManifestError::Generic => write!(f, "Generic Error"),
+            ManifestError::Parse(s) => write!(f, "Error trying to parse the manifest: {}", s),
+            ManifestError::IO(s) => write!(f, "Error trying to read a file/directory: {}", s),
         }
     }
 }
 
 impl From<toml::de::Error> for ManifestError {
     fn from(error: toml::de::Error) -> Self {
-        ManifestError::ParseError(error.to_string())
+        ManifestError::Parse(error.to_string())
     }
 }
 
 impl From<std::io::Error> for ManifestError {
     fn from(error: std::io::Error) -> Self {
-        ManifestError::IOError(error.to_string())
+        ManifestError::IO(error.to_string())
     }
 }
 
@@ -78,7 +78,7 @@ impl ManifestReader for TokioManifestReader<'_> {
             }
         });
         if let Err(errors) = walk_result {
-            return Err(ManifestError::IOError(format!(
+            return Err(ManifestError::IO(format!(
                 "Errors reading the assets directory: {:?}",
                 errors
             )));
