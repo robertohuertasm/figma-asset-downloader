@@ -91,12 +91,12 @@ pub struct ManifestChecker<T: ManifestReader> {
     reader: T,
 }
 
+#[allow(clippy::use_self)]
 impl<T: ManifestReader> ManifestChecker<T> {
     pub fn new(reader: T) -> Self {
         Self { reader }
     }
 
-    #[allow(clippy::use_self)]
     pub fn with_tokio_reader<'a>(
         manifest_path: &'a PathBuf,
     ) -> ManifestChecker<TokioManifestReader<'a>> {
