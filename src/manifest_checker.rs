@@ -96,6 +96,7 @@ impl<T: ManifestReader> ManifestChecker<T> {
         Self { reader }
     }
 
+    #[allow(clippy::use_self)]
     pub fn with_tokio_reader<'a>(
         manifest_path: &'a PathBuf,
     ) -> ManifestChecker<TokioManifestReader<'a>> {
@@ -106,10 +107,10 @@ impl<T: ManifestReader> ManifestChecker<T> {
         let manifest = self.reader.read_manifest().await?;
         let assets_dir_path = PathBuf::from(&manifest.path);
         let assets = self.reader.read_assets(&assets_dir_path).await?;
-        Ok(self.compare_results(manifest, assets))
+        Ok(Self::compare_results(manifest, assets))
     }
 
-    fn compare_results(&self, manifest: Manifest, assets: Vec<String>) -> ManifestInfo {
+    fn compare_results(manifest: Manifest, assets: Vec<String>) -> ManifestInfo {
         let mut new_assets = vec![];
         let extensions = &manifest.file_extensions;
         let scales = &manifest.file_scales;
@@ -155,8 +156,7 @@ impl<T: ManifestReader> ManifestChecker<T> {
 
         let missing_assets = manifest_map
             .into_iter()
-            .filter(|(_, val)| !*val)
-            .map(|(key, _)| key)
+            .filter_map(|(key, val)| if val { None } else { Some(key) })
             .collect::<Vec<_>>();
 
         ManifestInfo::default()
