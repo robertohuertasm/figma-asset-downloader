@@ -114,11 +114,67 @@ You just have to use the `--opt-jpg-level` and `--opt-png-level` options.
 
 Bear in mind that if you choose to optimize the images, the process will take a little bit more time than usual.
 
+## Import validation
+
+The tool also provides a convenient `subcommand` called `validate-manifest` that will help you validate that the import process has successfully imported all the images you were expecting.
+
+Consider a situation where one of the designers changes the name of an asset by mistake. This would be really hard to catch in a massive import and would lead to errors once your app is live and that's why we provide this `subcommand`.
+
+### Building a manifest
+
+In order to verify that everything went as expected once the import process has finished you'll have first to write a manifest containing information about the files you're expecting.
+
+At the **same level in the directory tree** that you've created your configuration file (*fad.toml*), create a file called `fad_manifest.toml`.
+
+> **IMPORTANT**: This file does not support any other name, so be sure to named like that. :wink:
+
+### Manifest structure
+
+This is the common structure of the manifest (`fad_manifest.toml`):
+
+```toml
+path = "downloads"
+file_extensions = ["png"]
+file_scales = [1,2]
+files = [
+  "image1",
+  "image2.jpg",
+]
+```
+
+There are, though, several things to note.
+
+#### Manifest defaults
+
+Note that `path`, `file_extensions` and `file_scales` are optional and if not informed will use their defaults: `downloads` folder for `path`, `png` for `file_extensions` and `[1]` for `file_scales. 
+
+Check out [Defaults section](#defaults) for more information.
+
+#### File naming conventions
+
+You need to put all the file names you're expecting to have in your assets folder but there are two things to consider:
+
+1. You only need to include the file extension in case you're using the special convention mentioned [here](#image-format). So, as a rule of thumb, don't include it unless you're sure that you need it. By default, `fad` will generate all the file names with the proper extensions according to what we have provided in the `file_extensions` argument.
+
+1. You don't need to worry about assets in `2.0x`, `3.0x` or similar folders. Again, `fad` will automatically take care for you by using the information provided by the `file_scales` argument.
+
+### How to run the validation tool
+
+In order for the validation to take place, just execute this command in your terminal:
+
+```sh
+fad validate-manifest
+```
+
+You will obtain a list of `missing` and `new` files, similar to this one:
+
+![Manifest validation](./img/manifest_validation.png "Manifest validation")
+
 ## Options
 
 ```txt
 USAGE:
-    fad [FLAGS] [OPTIONS]
+    fad [FLAGS] [OPTIONS] [SUBCOMMAND]
 
 FLAGS:
     -r, --force-file-extensions    If true, file extensions will prevail over naming convention (asset_name.jpg)
@@ -126,27 +182,25 @@ FLAGS:
     -V, --version                  Prints version information
 
 OPTIONS:
-    -c, --config-path <config-path>
-            Name of the figma-asset-downloader configuration [default: fad.toml]
+    -c, --config-path <config-path>                        Name of the figma-asset-downloader configuration [default: fad.toml]
 
-    -d, --document-id <document-id>
-            Document id (www.figma.com/file/FILE_ID/title?node-id=DOCUMENT_ID)
+    -d, --document-id <document-id>                        Document id (www.figma.com/file/FILE_ID/title?node-id=DOCUMENT_ID)
 
-    -e, --file-extensions <file-extensions>...
-            Extensions to export to in case there's no extension in the name of the asset: "png", "svg", "jpg", default:
-            png [default: png]
-    -f, --file-id <file-id>
-            File id (www.figma.com/file/FILE_ID/title?node-id=DOCUMENT_ID)
+    -e, --file-extensions <file-extensions>                Extensions to export to in case there's no extension in the name of the asset: "png", "svg", "jpg", default: png [default: png]
 
-    -s, --file-scales <file-scales>...                     Scales to export to: 1, 2, 3, 4 [default: 1]
-        --opt-jpg-level <opt-jpg-level>
-            Optimizes jpg images. You can set a level from 1 to 100. 80 recommended
+    -f, --file-id <file-id>                                File id (www.figma.com/file/FILE_ID/title?node-id=DOCUMENT_ID)
 
-        --opt-png-level <opt-png-level>
-            Optimizes png images. You can set a level from 1 to 6. 2 to 4 recommended
+    -s, --file-scales <file-scales>...                     Scales to export to: 1, 2, 3, 4, default: 1 [default: 1]
+
+        --opt-jpg-level <opt-jpg-level>                    Optimizes jpg images. You can set a level from 1 to 100. 80 recommended
+        --opt-png-level <opt-png-level>                    Optimizes png images. You can set a level from 1 to 6. 2 to 4 recommended
 
     -p, --path <path>                                      Path where assets will be downloaded [default: downloads]
     -t, --personal-access-token <personal-access-token>    Figma personal access token
+
+SUBCOMMANDS:
+    help                 Prints this message or the help of the given subcommand(s)
+    validate-manifest    Validates the result of the import with a manifest (fad_manifest.toml)
 ```
 
 **NOTE**: If you provide any arguments to the `cli`, they will take precedence over the `configuration` file. `-t, -f, -d` are always mandatory if at least any one of them is manually provided.

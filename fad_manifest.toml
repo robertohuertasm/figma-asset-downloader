@@ -2,6 +2,7 @@ path = "assets/images"
 file_extensions = ["png"]
 file_scales = [1,2]
 files = [
-  "activity-core-01-automatic-thoughts-and-self-confidence.png",
-  "activity-core-01-being-fair-to-yourself.png",
+  "activity-core-01-automatic-thoughts-and-self-confidence",
+  "activity-core-01-being-fair-to-yourself",
+  "missing-file"
 ]
