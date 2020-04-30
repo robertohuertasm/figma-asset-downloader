@@ -10,4 +10,4 @@
 - :heart: Humbly written with **[Rust](https://rust-lang.org)**
 
 [GitHub](https://github.com/robertohuertasm/figma-asset-downloader/)
-[Get Started](#home)
+[Get Started](#intro)
