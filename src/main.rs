@@ -90,7 +90,8 @@ async fn main() -> anyhow::Result<()> {
                 cli.opt_png_level,
                 cli.opt_jpg_level,
             )
-            .await?;
+            .await
+            .expect("Error downloading");
         }
         println!(
             "{}  {} {}  {}  {}",
@@ -282,13 +283,37 @@ async fn get_images_url_collection(
         "https://api.figma.com/v1/images/{}?ids={}&scale={}&format={}",
         file_id, image_ids, scale, format,
     );
-    println!("{}  {}", LINK, url);
-    client
-        .get(&url)
-        .send()
-        .await?
-        .json::<ImageUrlCollection>()
-        .await
+    println!("{} Url Collection  {}", LINK, url);
+
+    match client.get(&url).send().await {
+        Err(e) => {
+            println!("{} Error getting images url from Figma API {:?}", ERROR, e);
+            Err(e)
+        }
+        Ok(response) => {
+            if let Err(e) = response.error_for_status_ref() {
+                let error_text = response.text().await?;
+                println!(
+                    "{} Error {:?} parsing images url from Figma API: {}",
+                    ERROR,
+                    e.status(),
+                    error_text,
+                );
+                Err(e)
+            } else {
+                match response.json::<ImageUrlCollection>().await {
+                    Ok(iuc) => Ok(iuc),
+                    Err(e) => {
+                        println!(
+                            "{} Error parsing images url from Figma API: NOT JSON {:?}",
+                            ERROR, e,
+                        );
+                        Err(e)
+                    }
+                }
+            }
+        }
+    }
 }
 
 fn to_images(frames: &[Node], urls: &ImageUrlCollection, scale: usize, format: &str) -> Vec<Image> {
@@ -328,13 +353,25 @@ async fn download_images(
             download_path.join(format!("{}.0x", i.scale))
         };
         let final_path = path.join(format!("{}.{}", i.name.trim(), i.format));
-        let mut file = tokio::fs::File::create(&final_path).await?;
-        file.write_all(&bytes).await?;
-        if let Err(e) = optimize_image(&final_path, &i.format, opt_png_level, opt_jpg_level) {
-            println!(
-                "{} Error optimizing image {:?} => {:?}",
-                ERROR, final_path, e
-            );
+        match tokio::fs::File::create(&final_path).await {
+            Ok(mut file) => {
+                if let Err(e) = file.write_all(&bytes).await {
+                    println!("{} Error writing image {:?} => {:?}", ERROR, &final_path, e);
+                } else if let Err(e) =
+                    optimize_image(&final_path, &i.format, opt_png_level, opt_jpg_level)
+                {
+                    println!(
+                        "{} Error optimizing image {:?} => {:?}",
+                        ERROR, &final_path, e
+                    );
+                }
+            }
+            Err(e) => {
+                println!(
+                    "{} Error creating image {:?} => {:?}",
+                    ERROR, &final_path, e
+                );
+            }
         }
         Ok::<(), anyhow::Error>(())
     });
