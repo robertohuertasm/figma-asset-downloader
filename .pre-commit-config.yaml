@@ -11,7 +11,8 @@ repos:
       - id: clippy
         name: clippy
         description: Clippy for the warnings
-        entry: cargo clippy --all -- -D clippy::pedantic -D clippy::nursery -D warnings
+        # entry: cargo clippy --all -- -D clippy::pedantic -D clippy::nursery -D warnings
+        entry: cargo clippy
         language: system
         files: \.rs$
         pass_filenames: false
