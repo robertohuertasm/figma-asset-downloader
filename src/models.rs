@@ -49,8 +49,40 @@ pub struct Cli {
     /// Optimizes jpg images. You can set a level from 1 to 100. 80 recommended.
     #[structopt(long)]
     pub opt_jpg_level: Option<u8>,
+    /// If true, only new added images will be optimized. It's useful to only apply optimization to recently imported images and not to all of them.
+    #[structopt(short = "v", long)]
+    #[serde(default = "default_opt_only_on_validation")]
+    pub opt_only_on_validation: bool,
     #[structopt(subcommand)]
     pub subcommands: Option<SubCommands>,
+}
+
+impl Cli {
+    /// Adds non default values from another cli
+    pub fn add_non_defaults(&mut self, base_cli: Self) {
+        self.subcommands = base_cli.subcommands;
+        if base_cli.opt_only_on_validation {
+            self.opt_only_on_validation = true;
+        }
+        if base_cli.force_file_extensions {
+            self.force_file_extensions = true;
+        }
+        if base_cli.personal_access_token.is_some() {
+            self.personal_access_token = base_cli.personal_access_token;
+        }
+        if base_cli.file_id.is_some() {
+            self.file_id = base_cli.file_id;
+        }
+        if base_cli.document_id.is_some() {
+            self.document_id = base_cli.document_id;
+        }
+        if base_cli.opt_png_level.is_some() {
+            self.opt_png_level = base_cli.opt_png_level;
+        }
+        if base_cli.opt_jpg_level.is_some() {
+            self.opt_jpg_level = base_cli.opt_jpg_level;
+        }
+    }
 }
 
 #[derive(StructOpt, Debug, PartialEq, Deserialize)]
@@ -111,6 +143,10 @@ fn default_path() -> String {
 }
 
 const fn default_force_file_extensions() -> bool {
+    false
+}
+
+const fn default_opt_only_on_validation() -> bool {
     false
 }
 // end of default values for serde

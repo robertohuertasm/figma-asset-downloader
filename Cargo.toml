@@ -1,7 +1,7 @@
 [package]
 name = "figma-asset-downloader"
 description = "Small utility to help you download Figma assets directly to your computer."
-version = "0.6.0"
+version = "0.7.0"
 authors = ["Roberto Huertas <roberto.huertas@outlook.com>"]
 license = "MIT"
 edition = "2018"
@@ -29,7 +29,7 @@ console = "0.11"
 serde = {version = "1.0", features = ["derive"]}
 serde_json = "1.0.56"
 image = { version = "0.23.6", features= ["jpeg", "jpeg_rayon"] }
-oxipng = "2.3.0"
+oxipng = "3.0.0"
 async-trait = "0.1.36"
 anyhow = "1.0"
 scan_dir = "0.3.3"

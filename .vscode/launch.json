@@ -15,7 +15,7 @@
           "kind": "bin"
         }
       },
-      "args": [],
+      "args": ["-v", "validate-manifest"],
       "cwd": "${workspaceFolder}",
       "sourceLanguages": ["rust"]
     },

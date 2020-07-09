@@ -3,7 +3,7 @@ use crate::models::*;
 use console::style;
 use emojis::*;
 use futures::prelude::*;
-use manifest_checker::{ManifestChecker, TokioManifestReader};
+use manifest_checker::{ManifestChecker, ManifestInfo, TokioManifestReader};
 use reqwest::{header, Client};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
@@ -29,6 +29,31 @@ async fn main() -> anyhow::Result<()> {
         match manifest_result {
             Ok(manifest) => {
                 manifest.print_info();
+
+                if !cli.opt_only_on_validation {
+                    return Ok(());
+                }
+
+                if let ManifestInfo {
+                    new_assets: Some(new_assets),
+                    assets_dir_path: Some(assets_dir_path),
+                    ..
+                } = manifest
+                {
+                    // NOTE: Rayon doesn't work well here.
+                    for asset in new_assets {
+                        let path = assets_dir_path.join(asset);
+                        let extension = path
+                            .extension()
+                            .and_then(std::ffi::OsStr::to_str)
+                            .unwrap_or_else(|| "png");
+                        if let Err(e) =
+                            optimize_image(&path, extension, cli.opt_png_level, cli.opt_jpg_level)
+                        {
+                            println!("{} Error optimizing image {:?} => {:?}", ERROR, &path, e);
+                        }
+                    }
+                }
             }
             Err(e) => {
                 println!(
@@ -89,6 +114,7 @@ async fn main() -> anyhow::Result<()> {
                 &download_path,
                 cli.opt_png_level,
                 cli.opt_jpg_level,
+                cli.opt_only_on_validation,
             )
             .await
             .expect("Error downloading");
@@ -122,35 +148,32 @@ async fn main() -> anyhow::Result<()> {
 
 async fn get_cli() -> anyhow::Result<Cli> {
     let cli: Cli = Cli::from_args();
-    if cli.personal_access_token.is_some() || cli.subcommands.is_some() {
-        Ok(cli)
-    } else {
-        let config_str = tokio::fs::read_to_string(&cli.config_path)
-            .await
-            .map_err(|e| {
-                println!(
-                    "{}  {}",
-                    ERROR,
-                    style("The provided configuration file was not found!")
-                        .bold()
-                        .red(),
-                );
-                e
-            })?;
-        let cli: Cli = toml::from_str(&config_str).map_err(|e| {
-            // NOTE: this should never happen while the cli options keep being all optional.
-            // we keep it here just in case something changes in the future.
+    let config_str = tokio::fs::read_to_string(&cli.config_path)
+        .await
+        .map_err(|e| {
             println!(
                 "{}  {}",
                 ERROR,
-                style("An error occurred trying to parse the config file.")
+                style("The provided configuration file was not found!")
                     .bold()
                     .red(),
             );
             e
         })?;
-        Ok(cli)
-    }
+    let mut cli_from_file: Cli = toml::from_str(&config_str).map_err(|e| {
+        // NOTE: this should never happen while the cli options keep being all optional.
+        // we keep it here just in case something changes in the future.
+        println!(
+            "{}  {}",
+            ERROR,
+            style("An error occurred trying to parse the config file.")
+                .bold()
+                .red(),
+        );
+        e
+    })?;
+    cli_from_file.add_non_defaults(cli);
+    Ok(cli_from_file)
 }
 
 fn get_client(token: &str) -> Result<Client, reqwest::Error> {
@@ -339,6 +362,7 @@ async fn download_images(
     download_path: &PathBuf,
     opt_png_level: Option<u8>,
     opt_jpg_level: Option<u8>,
+    opt_only_on_validation: bool,
 ) -> anyhow::Result<()> {
     println!(
         "{}  {}",
@@ -357,13 +381,15 @@ async fn download_images(
             Ok(mut file) => {
                 if let Err(e) = file.write_all(&bytes).await {
                     println!("{} Error writing image {:?} => {:?}", ERROR, &final_path, e);
-                } else if let Err(e) =
-                    optimize_image(&final_path, &i.format, opt_png_level, opt_jpg_level)
-                {
-                    println!(
-                        "{} Error optimizing image {:?} => {:?}",
-                        ERROR, &final_path, e
-                    );
+                } else if !opt_only_on_validation {
+                    if let Err(e) =
+                        optimize_image(&final_path, &i.format, opt_png_level, opt_jpg_level)
+                    {
+                        println!(
+                            "{} Error optimizing image {:?} => {:?}",
+                            ERROR, &final_path, e
+                        );
+                    }
                 }
             }
             Err(e) => {
@@ -389,6 +415,7 @@ fn optimize_image(
     match extension {
         "jpg" => {
             if let Some(lvl) = opt_jpg_level {
+                print_optimizing_image(&path);
                 let img = image::open(path)?;
                 let dim = image::image_dimensions(path)?;
                 let mut fw = std::fs::File::create(path)?;
@@ -398,6 +425,7 @@ fn optimize_image(
         }
         "png" => {
             if let Some(lvl) = opt_png_level {
+                print_optimizing_image(&path);
                 let inf = oxipng::InFile::from(path);
                 let ouf = oxipng::OutFile::Path(Some(path.into()));
                 let opts = oxipng::Options::from_preset(lvl);
@@ -407,4 +435,13 @@ fn optimize_image(
         _ => (),
     }
     Ok(())
+}
+
+fn print_optimizing_image(path: &Path) {
+    println!(
+        "{} {} {:?} ",
+        FRAME,
+        style("Optimizing image").yellow().bold(),
+        &path
+    );
 }

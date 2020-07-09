@@ -108,11 +108,15 @@ If you need more help just execute `fad -h`.
 
 ## Image optimization
 
-[Figma](https://www.figma.com/) export API does not optimize the images. That's why this tool has also the ability to optimize `jpeg` and `png` formats. 
+[Figma](https://www.figma.com/) export API does not optimize the images. That's why this tool has also the ability to optimize `jpeg` and `png` formats.
 
 You just have to use the `--opt-jpg-level` and `--opt-png-level` options.
 
 Bear in mind that if you choose to optimize the images, the process will take a little bit more time than usual.
+
+Note that there's another argument called `--opt-only-on-validation` that will execute optimization only when using the `validate-manifest` subcommand. This may be very useful in case you only want to optimize the recently added assets and forget about the existing ones, specially if you're using `git`.
+
+Take into account that if this flag is set to `true` in your `fad.toml`, the optimization won't take place during the importing process.
 
 ## Import validation
 
@@ -170,6 +174,10 @@ You will obtain a list of `missing` and `new` files, similar to this one:
 
 ![Manifest validation](./img/manifest_validation.png "Manifest validation")
 
+### Optimizing only the new assets while validating
+
+There's another argument called `--opt-only-on-validation` that will execute optimization only when using the `validate-manifest` subcommand. This may be very useful in case you only want to optimize the recently added assets and forget about the existing ones, specially if you're using `git`.
+
 ## Options
 
 ```txt
@@ -179,6 +187,8 @@ USAGE:
 FLAGS:
     -r, --force-file-extensions    If true, file extensions will prevail over naming convention (asset_name.jpg)
     -h, --help                     Prints help information
+    -v, --opt-only-on-validation    If true, only new added images will be optimized. It's useful to only apply
+                                    optimization to recently imported images and not to all of them
     -V, --version                  Prints version information
 
 OPTIONS:

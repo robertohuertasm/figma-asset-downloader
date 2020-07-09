@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use crate::{emojis, models::Manifest};
 use async_trait::async_trait;
 use console::style;
@@ -107,10 +105,14 @@ impl<T: ManifestReader> ManifestChecker<T> {
         let manifest = self.reader.read_manifest().await?;
         let assets_dir_path = std::env::current_dir()?.join(&manifest.path);
         let assets = self.reader.read_assets(&assets_dir_path).await?;
-        Ok(Self::compare_results(manifest, assets))
+        Ok(Self::compare_results(manifest, assets, assets_dir_path))
     }
 
-    fn compare_results(manifest: Manifest, assets: Vec<String>) -> ManifestInfo {
+    fn compare_results(
+        manifest: Manifest,
+        assets: Vec<String>,
+        assets_dir_path: PathBuf,
+    ) -> ManifestInfo {
         let mut new_assets = vec![];
         let extensions = &manifest.file_extensions;
         let scales = &manifest.file_scales;
@@ -163,6 +165,7 @@ impl<T: ManifestReader> ManifestChecker<T> {
         new_assets.sort();
 
         ManifestInfo::default()
+            .with_assets_dir_path(assets_dir_path)
             .with_new_assets(new_assets)
             .with_missing_assets(missing_assets)
     }
@@ -170,11 +173,18 @@ impl<T: ManifestReader> ManifestChecker<T> {
 
 #[derive(Default, Debug)]
 pub struct ManifestInfo {
+    pub assets_dir_path: Option<PathBuf>,
     pub new_assets: Option<Vec<String>>,
     pub missing_assets: Option<Vec<String>>,
 }
 
 impl ManifestInfo {
+    /// Adds teh assets path
+    pub fn with_assets_dir_path(mut self, assets_dir_path: PathBuf) -> Self {
+        self.assets_dir_path = Some(assets_dir_path);
+        self
+    }
+
     /// Adds new assets collection
     pub fn with_new_assets(mut self, assets: Vec<String>) -> Self {
         if !assets.is_empty() {
