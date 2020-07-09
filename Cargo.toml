@@ -1,7 +1,7 @@
 [package]
 name = "figma-asset-downloader"
 description = "Small utility to help you download Figma assets directly to your computer."
-version = "0.7.0"
+version = "0.7.1"
 authors = ["Roberto Huertas <roberto.huertas@outlook.com>"]
 license = "MIT"
 edition = "2018"

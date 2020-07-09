@@ -100,13 +100,12 @@ async fn main() -> anyhow::Result<()> {
                 FOLDER,
                 style("Creating the folder structure...").bold().green()
             );
-            future::join_all(scales.iter().enumerate().map(|(i, s)| {
-                if i == 0 {
-                    tokio::fs::create_dir_all(download_path.clone())
-                } else {
-                    tokio::fs::create_dir_all(download_path.join(format!("{}.0x", s)))
-                }
-            }))
+            tokio::fs::create_dir_all(download_path.clone()).await?;
+            future::join_all(
+                scales
+                    .iter()
+                    .map(|s| tokio::fs::create_dir_all(download_path.join(format!("{}.0x", s)))),
+            )
             .await;
             download_images(
                 images,
@@ -382,6 +381,8 @@ async fn download_images(
                 if let Err(e) = file.write_all(&bytes).await {
                     println!("{} Error writing image {:?} => {:?}", ERROR, &final_path, e);
                 } else if !opt_only_on_validation {
+                    // TODO: we may have a bug here. optimize may be deleting some images
+                    // validate that the file exists after the optimization
                     if let Err(e) =
                         optimize_image(&final_path, &i.format, opt_png_level, opt_jpg_level)
                     {
@@ -391,6 +392,12 @@ async fn download_images(
                         );
                     }
                 }
+                println!(
+                    "{} {} {:?}",
+                    LINK,
+                    style("Image Downloaded").blue().bold(),
+                    &final_path
+                );
             }
             Err(e) => {
                 println!(

@@ -274,7 +274,7 @@ dependencies = [
 
 [[package]]
 name = "figma-asset-downloader"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "anyhow 1.0.26 (registry+https://github.com/rust-lang/crates.io-index)",
  "async-trait 0.1.36 (registry+https://github.com/rust-lang/crates.io-index)",
