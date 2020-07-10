@@ -107,16 +107,43 @@ async fn main() -> anyhow::Result<()> {
                     .map(|s| tokio::fs::create_dir_all(download_path.join(format!("{}.0x", s)))),
             )
             .await;
-            download_images(
-                images,
-                &client,
-                &download_path,
-                cli.opt_png_level,
-                cli.opt_jpg_level,
-                cli.opt_only_on_validation,
-            )
-            .await
-            .expect("Error downloading");
+
+            download_images(&images, &client, &download_path)
+                .await
+                .expect("Error downloading");
+            // optimizations doesn't seem to work with threads/futures
+            if !cli.opt_only_on_validation {
+                for img in images {
+                    let path = if img.scale == 1 {
+                        download_path.to_owned()
+                    } else {
+                        download_path.join(format!("{}.0x", img.scale))
+                    };
+                    let final_path = path.join(format!("{}.{}", img.name.trim(), img.format));
+                    if let Err(e) = optimize_image(
+                        &final_path,
+                        &img.format,
+                        cli.opt_png_level,
+                        cli.opt_jpg_level,
+                    ) {
+                        println!(
+                            "{} Error optimizing image {:?} => {:?}",
+                            ERROR, &final_path, e
+                        );
+                    } else {
+                        // validate that it exists
+                        let file_exists = Path::exists(&final_path);
+                        if !file_exists {
+                            println!(
+                                "{} {} {:?}",
+                                ERROR,
+                                style("FILE DELETED").red().bold(),
+                                &final_path
+                            );
+                        }
+                    }
+                }
+            }
         }
         println!(
             "{}  {} {}  {}  {}",
@@ -356,12 +383,9 @@ fn to_images(frames: &[Node], urls: &ImageUrlCollection, scale: usize, format: &
 }
 
 async fn download_images(
-    images: Vec<Image>,
+    images: &[Image],
     client: &Client,
     download_path: &PathBuf,
-    opt_png_level: Option<u8>,
-    opt_jpg_level: Option<u8>,
-    opt_only_on_validation: bool,
 ) -> anyhow::Result<()> {
     println!(
         "{}  {}",
@@ -380,24 +404,14 @@ async fn download_images(
             Ok(mut file) => {
                 if let Err(e) = file.write_all(&bytes).await {
                     println!("{} Error writing image {:?} => {:?}", ERROR, &final_path, e);
-                } else if !opt_only_on_validation {
-                    // TODO: we may have a bug here. optimize may be deleting some images
-                    // validate that the file exists after the optimization
-                    if let Err(e) =
-                        optimize_image(&final_path, &i.format, opt_png_level, opt_jpg_level)
-                    {
-                        println!(
-                            "{} Error optimizing image {:?} => {:?}",
-                            ERROR, &final_path, e
-                        );
-                    }
+                } else {
+                    println!(
+                        "{} {} {:?}",
+                        LINK,
+                        style("Image Downloaded").blue().bold(),
+                        &final_path
+                    );
                 }
-                println!(
-                    "{} {} {:?}",
-                    LINK,
-                    style("Image Downloaded").blue().bold(),
-                    &final_path
-                );
             }
             Err(e) => {
                 println!(
