@@ -56,7 +56,7 @@ Bear in mind that the `document-id` may be url-encoded. Don't use it like that. 
 
 ```sh
 ...node-id=323%3A471
-# should be 321:471
+# should be 323:471
 ```
 
 **IMPORTANT**: Be sure to use the `node-id` of the page. Don't select any object in your Figma document or this `node-id` will not correspond to the page but to some of the elements inside it.
