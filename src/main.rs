@@ -174,32 +174,25 @@ async fn main() -> anyhow::Result<()> {
 
 async fn get_cli() -> anyhow::Result<Cli> {
     let cli: Cli = Cli::from_args();
-    let config_str = tokio::fs::read_to_string(&cli.config_path)
-        .await
-        .map_err(|e| {
-            println!(
-                "{}  {}",
-                ERROR,
-                style("The provided configuration file was not found!")
-                    .bold()
-                    .red(),
-            );
-            e
-        })?;
-    let mut cli_from_file: Cli = toml::from_str(&config_str).map_err(|e| {
-        // NOTE: this should never happen while the cli options keep being all optional.
-        // we keep it here just in case something changes in the future.
-        println!(
-            "{}  {}",
-            ERROR,
-            style("An error occurred trying to parse the config file.")
-                .bold()
-                .red(),
-        );
-        e
-    })?;
-    cli_from_file.add_non_defaults(cli);
-    Ok(cli_from_file)
+    match tokio::fs::read_to_string(&cli.config_path).await {
+        Ok(config_str) => {
+            let mut cli_from_file: Cli = toml::from_str(&config_str).map_err(|e| {
+                // NOTE: this should never happen while the cli options keep being all optional.
+                // we keep it here just in case something changes in the future.
+                println!(
+                    "{}  {}",
+                    ERROR,
+                    style("An error occurred trying to parse the config file.")
+                        .bold()
+                        .red(),
+                );
+                e
+            })?;
+            cli_from_file.add_non_defaults(cli);
+            Ok(cli_from_file)
+        }
+        Err(_) => Ok(cli),
+    }
 }
 
 fn get_client(token: &str) -> Result<Client, reqwest::Error> {
@@ -440,7 +433,7 @@ fn optimize_image(
                 let img = image::open(path)?;
                 let dim = image::image_dimensions(path)?;
                 let mut fw = std::fs::File::create(path)?;
-                let mut enc = image::jpeg::JPEGEncoder::new_with_quality(&mut fw, lvl);
+                let mut enc = image::jpeg::JpegEncoder::new_with_quality(&mut fw, lvl);
                 enc.encode(&img.to_bytes(), dim.0, dim.1, img.color())?;
             }
         }
