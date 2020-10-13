@@ -385,7 +385,7 @@ async fn download_images(
         DOWN,
         style("Downloading images...").bold().green()
     );
-    let futures = images.into_iter().map(move |i| async move {
+    let futures = images.iter().map(move |i| async move {
         let bytes = client.get(&i.url).send().await?.bytes().await?;
         let path = if i.scale == 1 {
             download_path.to_owned()
