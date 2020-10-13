@@ -15,13 +15,13 @@ pub type Frames = Vec<Node>;
 )]
 pub struct Cli {
     /// Figma personal access token
-    #[structopt(short = "t", long, requires_all(&["file-id", "document-id"]))]
+    #[structopt(short = "t", long)]
     pub personal_access_token: Option<String>,
     /// File id (www.figma.com/file/FILE_ID/title?node-id=DOCUMENT_ID)
-    #[structopt(short, long, requires_all(&["personal-access-token", "document-id"]))]
+    #[structopt(short, long)]
     pub file_id: Option<String>,
     /// Document id (www.figma.com/file/FILE_ID/title?node-id=DOCUMENT_ID)
-    #[structopt(short, long, requires_all(&["personal-access-token", "file-id"]))]
+    #[structopt(short, long)]
     pub document_id: Option<String>,
     /// Path where assets will be downloaded
     #[structopt(short, long, default_value = "downloads")]
