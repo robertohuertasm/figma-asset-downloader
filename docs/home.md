@@ -213,4 +213,4 @@ SUBCOMMANDS:
     validate-manifest    Validates the result of the import with a manifest (fad_manifest.toml)
 ```
 
-**NOTE**: If you provide any arguments to the `cli`, they will take precedence over the `configuration` file. `-t, -f, -d` are always mandatory if at least any one of them is manually provided.
+**NOTE**: If you provide any arguments to the `cli`, they will take precedence over the `configuration` file.
