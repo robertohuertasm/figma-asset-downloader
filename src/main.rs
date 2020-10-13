@@ -46,7 +46,7 @@ async fn main() -> anyhow::Result<()> {
                         let extension = path
                             .extension()
                             .and_then(std::ffi::OsStr::to_str)
-                            .unwrap_or_else(|| "png");
+                            .unwrap_or("png");
                         if let Err(e) =
                             optimize_image(&path, extension, cli.opt_png_level, cli.opt_jpg_level)
                         {
