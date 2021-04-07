@@ -23,7 +23,7 @@ jobs:
       fail-fast: true
       matrix:
         rust: [stable]
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        os: [ubuntu-latest, macOS-10.15, macOS-11.0, windows-latest]
     steps:
       - name: Setup Rust
         uses: hecrj/setup-rust-action@master

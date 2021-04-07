@@ -12,12 +12,16 @@ jobs:
       fail-fast: true
       matrix:
         rust: [stable]
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        os: [ubuntu-latest, macOS-10.15, macOS-11.0, windows-latest]
         include:
-          - os: macOS-latest
+          - os: macOS-10.15
             rust: stable
             artifact_name: fad
-            release_name: fad_osx.zip
+            release_name: fad_osx_10_15.zip
+          - os: macOS-11.0
+            rust: stable
+            artifact_name: fad
+            release_name: fad_osx_11.zip
           - os: windows-latest
             rust: stable
             artifact_name: fad.exe
@@ -48,7 +52,7 @@ jobs:
           echo "Setting exec permissions"
           chmod +x ./target/release/${{ matrix.artifact_name }}
           echo "Zipping"
-          if [[ "${{matrix.os}}" == "macOS-latest" ]]
+          if [[ "${{matrix.os}}" == "macOS-10.15" ]] || [[ "${{matrix.os}}" == "macOS-11.0" ]]
           then
             zip ${{matrix.release_name}} target/release/${{matrix.artifact_name}}
           else
