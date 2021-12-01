@@ -108,21 +108,27 @@ async fn main() -> anyhow::Result<()> {
             )
             .await;
 
-            download_images(&images, &client, &download_path)
+            let images_to_process = get_images_to_process(
+                &images,
+                &download_path,
+                cli.download_only_unexisting_in_folder,
+            );
+
+            download_images(&images_to_process, &client)
                 .await
                 .expect("Error downloading");
             // optimizations doesn't seem to work with threads/futures
             if !cli.opt_only_on_validation {
-                for img in images {
-                    let path = if img.scale == 1 {
+                for img in images_to_process {
+                    let path = if img.0.scale == 1 {
                         download_path.to_owned()
                     } else {
-                        download_path.join(format!("{}.0x", img.scale))
+                        download_path.join(format!("{}.0x", img.0.scale))
                     };
-                    let final_path = path.join(format!("{}.{}", img.name.trim(), img.format));
+                    let final_path = path.join(format!("{}.{}", img.0.name.trim(), img.0.format));
                     if let Err(e) = optimize_image(
                         &final_path,
-                        &img.format,
+                        &img.0.format,
                         cli.opt_png_level,
                         cli.opt_jpg_level,
                     ) {
@@ -375,42 +381,53 @@ fn to_images(frames: &[Node], urls: &ImageUrlCollection, scale: usize, format: &
         .collect()
 }
 
-async fn download_images(
-    images: &[Image],
-    client: &Client,
-    download_path: &PathBuf,
-) -> anyhow::Result<()> {
-    println!(
-        "{}  {}",
-        DOWN,
-        style("Downloading images...").bold().green()
-    );
-    let futures = images.iter().map(move |i| async move {
-        let bytes = client.get(&i.url).send().await?.bytes().await?;
+fn get_images_to_process<'a>(
+    images: &'a [Image],
+    download_path: &'a PathBuf,
+    download_only_unexisting_in_folder: bool,
+) -> Vec<(&'a Image, PathBuf)> {
+    let mut images_to_process: Vec<(&Image, PathBuf)> = vec![];
+    for i in images {
         let path = if i.scale == 1 {
             download_path.to_owned()
         } else {
             download_path.join(format!("{}.0x", i.scale))
         };
         let final_path = path.join(format!("{}.{}", i.name.trim(), i.format));
-        match tokio::fs::File::create(&final_path).await {
+        let file_exists = std::fs::metadata(&final_path).is_ok();
+
+        if !download_only_unexisting_in_folder
+            || (download_only_unexisting_in_folder && !file_exists)
+        {
+            images_to_process.push((i, final_path));
+        }
+    }
+    images_to_process
+}
+
+async fn download_images(images: &[(&Image, PathBuf)], client: &Client) -> anyhow::Result<()> {
+    println!(
+        "{}  {}",
+        DOWN,
+        style("Downloading images...").bold().green()
+    );
+    let futures = images.iter().map(move |i| async move {
+        let bytes = client.get(&i.0.url).send().await?.bytes().await?;
+        match tokio::fs::File::create(&i.1).await {
             Ok(mut file) => {
                 if let Err(e) = file.write_all(&bytes).await {
-                    println!("{} Error writing image {:?} => {:?}", ERROR, &final_path, e);
+                    println!("{} Error writing image {:?} => {:?}", ERROR, i.1, e);
                 } else {
                     println!(
                         "{} {} {:?}",
                         LINK,
                         style("Image Downloaded").blue().bold(),
-                        &final_path
+                        i.1
                     );
                 }
             }
             Err(e) => {
-                println!(
-                    "{} Error creating image {:?} => {:?}",
-                    ERROR, &final_path, e
-                );
+                println!("{} Error creating image {:?} => {:?}", ERROR, i.1, e);
             }
         }
         Ok::<(), anyhow::Error>(())

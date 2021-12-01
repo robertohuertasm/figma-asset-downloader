@@ -185,6 +185,8 @@ USAGE:
     fad [FLAGS] [OPTIONS] [SUBCOMMAND]
 
 FLAGS:
+    -u, --download-only-unexisting-in-folder    If true, it won't download the images that already exists in your
+                                                download folder. Useful to avoid huge git diffs
     -r, --force-file-extensions    If true, file extensions will prevail over naming convention (asset_name.jpg)
     -h, --help                     Prints help information
     -v, --opt-only-on-validation    If true, only new added images will be optimized. It's useful to only apply

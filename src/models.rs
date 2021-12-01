@@ -58,6 +58,10 @@ pub struct Cli {
     #[structopt(short = "v", long)]
     #[serde(default = "default_opt_only_on_validation")]
     pub opt_only_on_validation: bool,
+    /// If true, it won't download the images that already exists in your download folder. Useful to avoid huge git diffs.
+    #[structopt(short = "u", long)]
+    #[serde(default = "default_download_only_unexisting_in_folder")]
+    pub download_only_unexisting_in_folder: bool,
     #[structopt(subcommand)]
     pub subcommands: Option<SubCommands>,
 }
@@ -71,6 +75,9 @@ impl Cli {
         }
         if other_cli.force_file_extensions {
             self.force_file_extensions = true;
+        }
+        if other_cli.download_only_unexisting_in_folder {
+            self.download_only_unexisting_in_folder = true;
         }
         if other_cli.personal_access_token.is_some() {
             self.personal_access_token = other_cli.personal_access_token;
@@ -178,6 +185,10 @@ const fn default_force_file_extensions() -> bool {
 const fn default_opt_only_on_validation() -> bool {
     false
 }
+
+const fn default_download_only_unexisting_in_folder() -> bool {
+    false
+}
 // end of default values for serde
 
 #[derive(Debug, Deserialize, Clone)]
@@ -266,6 +277,7 @@ mod tests {
             file_scales: vec![1],
             file_extensions: vec![DEFAULT_FILE_EXT.to_owned()],
             force_file_extensions: false,
+            download_only_unexisting_in_folder: false,
             config_path: "".to_string(),
             opt_png_level: None,
             opt_jpg_level: None,
@@ -318,6 +330,19 @@ mod tests {
         cli.add_non_defaults(other);
 
         assert!(cli.force_file_extensions);
+    }
+
+    #[test]
+    fn cli_add_non_defaults_add_download_only_unexisting_in_folder_if_true() {
+        let mut cli = build_default_cli();
+        let mut other = build_default_cli();
+
+        assert!(!cli.download_only_unexisting_in_folder);
+
+        other.download_only_unexisting_in_folder = true;
+        cli.add_non_defaults(other);
+
+        assert!(cli.download_only_unexisting_in_folder);
     }
 
     #[test]
