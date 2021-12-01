@@ -112,7 +112,7 @@ async fn main() -> anyhow::Result<()> {
                 &images,
                 &download_path,
                 cli.download_only_unexisting_in_folder,
-            );
+            ).await;
 
             download_images(&images_to_process, &client)
                 .await
@@ -382,7 +382,7 @@ fn to_images(frames: &[Node], urls: &ImageUrlCollection, scale: usize, format: &
         .collect()
 }
 
-fn get_images_info_to_process<'a>(
+async fn get_images_info_to_process<'a>(
     images: &'a [Image],
     download_path: &'a PathBuf,
     download_only_unexisting_in_folder: bool,
@@ -399,7 +399,7 @@ fn get_images_info_to_process<'a>(
         if !download_only_unexisting_in_folder {
             images_to_process.push((i, final_path))
         } else {
-            let file_exists = std::fs::metadata(&final_path).is_ok();
+            let file_exists = tokio::fs::metadata(&final_path).await.is_ok();
             if !file_exists {
                 images_to_process.push((i, final_path));
             }
