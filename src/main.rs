@@ -108,7 +108,7 @@ async fn main() -> anyhow::Result<()> {
             )
             .await;
 
-            let images_to_process = get_images_to_process(
+            let images_to_process = get_images_info_to_process(
                 &images,
                 &download_path,
                 cli.download_only_unexisting_in_folder,
@@ -119,16 +119,17 @@ async fn main() -> anyhow::Result<()> {
                 .expect("Error downloading");
             // optimizations doesn't seem to work with threads/futures
             if !cli.opt_only_on_validation {
-                for img in images_to_process {
-                    let path = if img.0.scale == 1 {
+                for img_info in images_to_process {
+                    let img = img_info.0;
+                    let path = if img.scale == 1 {
                         download_path.to_owned()
                     } else {
-                        download_path.join(format!("{}.0x", img.0.scale))
+                        download_path.join(format!("{}.0x", img.scale))
                     };
-                    let final_path = path.join(format!("{}.{}", img.0.name.trim(), img.0.format));
+                    let final_path = path.join(format!("{}.{}", img.name.trim(), img.format));
                     if let Err(e) = optimize_image(
                         &final_path,
-                        &img.0.format,
+                        &img.format,
                         cli.opt_png_level,
                         cli.opt_jpg_level,
                     ) {
@@ -381,7 +382,7 @@ fn to_images(frames: &[Node], urls: &ImageUrlCollection, scale: usize, format: &
         .collect()
 }
 
-fn get_images_to_process<'a>(
+fn get_images_info_to_process<'a>(
     images: &'a [Image],
     download_path: &'a PathBuf,
     download_only_unexisting_in_folder: bool,
@@ -394,12 +395,14 @@ fn get_images_to_process<'a>(
             download_path.join(format!("{}.0x", i.scale))
         };
         let final_path = path.join(format!("{}.{}", i.name.trim(), i.format));
-        let file_exists = std::fs::metadata(&final_path).is_ok();
-
-        if !download_only_unexisting_in_folder
-            || (download_only_unexisting_in_folder && !file_exists)
-        {
-            images_to_process.push((i, final_path));
+        
+        if !download_only_unexisting_in_folder {
+            images_to_process.push((i, final_path))
+        } else {
+            let file_exists = std::fs::metadata(&final_path).is_ok();
+            if !file_exists {
+                images_to_process.push((i, final_path));
+            }
         }
     }
     images_to_process
