@@ -196,7 +196,7 @@ FLAGS:
 OPTIONS:
     -c, --config-path <config-path>                        Name of the figma-asset-downloader configuration [default: fad.toml]
 
-    -d, --document-id <document-id>                        Document id (www.figma.com/file/FILE_ID/title?node-id=DOCUMENT_ID)
+    -d, --documents-ids <documents-ids>...                 List of documents ids (www.figma.com/file/FILE_ID/title?node-id=DOCUMENT_ID)    
 
     -e, --file-extensions <file-extensions>                Extensions to export to in case there's no extension in the name of the asset: "png", "svg", "jpg", default: png [default: png]
 

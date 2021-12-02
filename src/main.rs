@@ -69,7 +69,7 @@ async fn main() -> anyhow::Result<()> {
             }
         }
     } else if let (Some(token), Some(file_id), Some(document_id)) =
-        (cli.personal_access_token, cli.file_id, cli.document_id)
+        (cli.personal_access_token, cli.file_id, cli.documents_ids)
     {
         let scales = cli.file_scales;
         let formats = cli.file_extensions;
@@ -210,38 +210,54 @@ fn get_client(token: &str) -> Result<Client, reqwest::Error> {
 
 async fn get_frames(
     file_id: &str,
-    document_id: &str,
+    documents_ids: &Vec<String>,
     client: &Client,
 ) -> anyhow::Result<Option<Frames>> {
-    let url = format!(
-        "https://api.figma.com/v1/files/{}/nodes?ids={}",
-        file_id, document_id,
-    );
-    println!(
-        "{}  {}\n{} {}",
-        FRAME,
-        style("Getting Frames from...").bold().green(),
-        LINK,
-        url,
-    );
-    let mut page: Page = client.get(&url).send().await?.json().await.map_err(|e| {
-        let error_message = "Check the values of your configuration. Is the URL ok?";
-        println!("{}  {}", ERROR, style(error_message).bold().red());
-        e
-    })?;
-    let document_node = page.nodes.remove(document_id).map(|doc| doc.document);
-    let frames = document_node
-        .map(|doc| {
-            doc.children.map(|nodes| {
-                nodes
-                    .into_iter()
-                    .filter(|node| node.node_type == NodeType::FRAME)
-                    .collect::<Frames>()
+    let mut frames: Frames = vec![];
+    for document_id in documents_ids {
+        let url = format!(
+            "https://api.figma.com/v1/files/{}/nodes?ids={}",
+            file_id, document_id,
+        );
+        println!(
+            "{}  {}\n{} {}",
+            FRAME,
+            style("Getting Frames from...").bold().green(),
+            LINK,
+            url,
+        );
+        let mut page: Page = client.get(&url).send().await?.json().await.map_err(|e| {
+            let error_message = "Check the values of your configuration. Is the URL ok?";
+            println!("{}  {}", ERROR, style(error_message).bold().red());
+            e
+        })?;
+        let document_node = page.nodes.remove(document_id).map(|doc| doc.document);
+        let frames_per_doc = document_node
+            .map(|doc| {
+                doc.children.map(|nodes| {
+                    nodes
+                        .into_iter()
+                        .filter(|node| node.node_type == NodeType::FRAME)
+                        .collect::<Frames>()
+                })
             })
-        })
-        .flatten();
-
-    Ok(frames)
+            .flatten();
+        if let Some(mut f) = frames_per_doc {
+            frames.append(&mut f);
+        }
+    }
+    if frames.is_empty() {
+        println!(
+            "{}  {}",
+            ERROR,
+            style("No frames found. Check your file id and document ids.")
+                .bold()
+                .red(),
+        );
+        Ok(None)
+    } else {
+        Ok(Some(frames))
+    }
 }
 
 async fn get_images<'a>(
