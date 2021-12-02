@@ -112,7 +112,8 @@ async fn main() -> anyhow::Result<()> {
                 &images,
                 &download_path,
                 cli.download_only_unexisting_in_folder,
-            ).await;
+            )
+            .await;
 
             download_images(&images_to_process, &client)
                 .await
@@ -395,7 +396,7 @@ async fn get_images_info_to_process<'a>(
             download_path.join(format!("{}.0x", i.scale))
         };
         let final_path = path.join(format!("{}.{}", i.name.trim(), i.format));
-        
+
         if !download_only_unexisting_in_folder {
             images_to_process.push((i, final_path))
         } else {
