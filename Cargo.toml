@@ -29,7 +29,7 @@ console = "0.15"
 serde = {version = "1.0", features = ["derive"]}
 serde_json = "1.0.58"
 image = { version = "0.23.10", features= ["jpeg", "jpeg_rayon"] }
-oxipng = "3.0.1"
+oxipng = "5.0.1"
 async-trait = "0.1.41"
 anyhow = "1.0"
 scan_dir = "0.3.3"

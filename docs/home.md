@@ -20,7 +20,7 @@ You can learn more about the process of creation of this tool in this [dev.to po
 
 ## Installation
 
-You can currently get artifacts for `Windows`, `MacOS` & `Ubuntu`. 
+You can currently get artifacts for `Windows`, `MacOS` & `Ubuntu`.
 
 Just download your preferred release from [GitHub releases](https://github.com/robertohuertasm/figma-asset-downloader/releases), unzip it and add the `fad` executable to your path.
 
@@ -34,14 +34,14 @@ cargo install figma-asset-downloader
 
 You'll need to get a [Figma Personal Access Token](https://www.figma.com/developers/api#access-tokens) in order to use the tool. Follow [this link](https://www.figma.com/developers/api#access-tokens) to learn how to get it.
 
-![Personal Access Token](./img/personal_access_token.png "Personal Access Token")
+![Personal Access Token](./img/personal_access_token.png 'Personal Access Token')
 
 ## Usage
 
 The usage is fairly simple:
 
 ```sh
-fad -t <personal-access-token> -f <file-id> -d <document-id>
+fad -t <personal-access-token> -f <file-id> -d <document-ids>
 ```
 
 To get the `file-id` and the `document-id`, you have to take a look at the `url` of the Figma page that you want to download the images from.
@@ -68,7 +68,7 @@ By default, all the images will be downloaded at `scale 1` and `png` format insi
 If you want to change this, you can use any of the other options that this `cli` provides. Specifically, `-s` will accept a collection of scales (1,2,3,4...) and `-e` will allow you to define a collection of exporting format (`png`, `svg`, `pdf`, `jpeg`).
 
 ```sh
-fad [-t personal-access-token] [-f file-id] [-d document-id] [-p download-folder-name] [-s 1 2 3 4] [-e png svg jpeg pdf] [-c configuration-file]
+fad [-t personal-access-token] [-f file-id] [-d document-ids] [-p download-folder-name] [-s 1 2 3 4] [-e png svg jpeg pdf] [-c configuration-file]
 ```
 
 ## Configuration file
@@ -82,7 +82,7 @@ This is an example of a `fad.toml` file:
 ```toml
 personal_access_token = "30277-2c47420f-8d6b-4c6c-b170-2727b8999653"
 file_id = "h92QKQ8iOkFlq0q6mA4UhX"
-document_id =  "323:471"
+document_ids =  ["323:471"] # You can use multiple document ids
 path = "downloads"
 file_extensions = ["png"]
 file_scales = [1,2,3,4]
@@ -128,7 +128,7 @@ Consider a situation where one of the designers changes the name of an asset by 
 
 In order to verify that everything went as expected once the import process has finished you'll have first to write a manifest containing information about the files you're expecting.
 
-At the **same level in the directory tree** that you've created your configuration file (*fad.toml*), create a file called `fad_manifest.toml`.
+At the **same level in the directory tree** that you've created your configuration file (_fad.toml_), create a file called `fad_manifest.toml`.
 
 Note that you can use the name you want. In that case, you can specify the `-p` or `--path` parameter with the proper `path` to the manifest.
 
@@ -172,7 +172,7 @@ fad validate-manifest [-p path/to/fad_manifest.toml]
 
 You will obtain a list of `missing` and `new` files, similar to this one:
 
-![Manifest validation](./img/manifest_validation.png "Manifest validation")
+![Manifest validation](./img/manifest_validation.png 'Manifest validation')
 
 ### Optimizing only the new assets while validating
 
@@ -196,7 +196,7 @@ FLAGS:
 OPTIONS:
     -c, --config-path <config-path>                        Name of the figma-asset-downloader configuration [default: fad.toml]
 
-    -d, --documents-ids <documents-ids>...                 List of documents ids (www.figma.com/file/FILE_ID/title?node-id=DOCUMENT_ID)    
+    -d, --documents-ids <documents-ids>...                 List of documents ids (www.figma.com/file/FILE_ID/title?node-id=DOCUMENT_ID)
 
     -e, --file-extensions <file-extensions>                Extensions to export to in case there's no extension in the name of the asset: "png", "svg", "jpg", default: png [default: png]
 

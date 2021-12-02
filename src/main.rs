@@ -69,7 +69,7 @@ async fn main() -> anyhow::Result<()> {
             }
         }
     } else if let (Some(token), Some(file_id), Some(document_id)) =
-        (cli.personal_access_token, cli.file_id, cli.documents_ids)
+        (cli.personal_access_token, cli.file_id, cli.document_ids)
     {
         let scales = cli.file_scales;
         let formats = cli.file_extensions;
@@ -210,11 +210,12 @@ fn get_client(token: &str) -> Result<Client, reqwest::Error> {
 
 async fn get_frames(
     file_id: &str,
-    documents_ids: &Vec<String>,
+    document_ids: &Vec<String>,
     client: &Client,
 ) -> anyhow::Result<Option<Frames>> {
     let mut frames: Frames = vec![];
-    for document_id in documents_ids {
+
+    for document_id in document_ids {
         let url = format!(
             "https://api.figma.com/v1/files/{}/nodes?ids={}",
             file_id, document_id,
@@ -242,10 +243,12 @@ async fn get_frames(
                 })
             })
             .flatten();
+
         if let Some(mut f) = frames_per_doc {
             frames.append(&mut f);
         }
     }
+
     if frames.is_empty() {
         println!(
             "{}  {}",

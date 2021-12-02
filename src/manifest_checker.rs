@@ -11,6 +11,7 @@ use std::{
 
 #[derive(Debug, Clone)]
 pub enum ManifestError {
+    #[allow(dead_code)]
     Generic,
     Parse(String),
     IO(String),
