@@ -25,9 +25,9 @@ pub struct Cli {
     /// File id (www.figma.com/file/FILE_ID/title?node-id=DOCUMENT_ID)
     #[structopt(short, long)]
     pub file_id: Option<String>,
-    /// Document id (www.figma.com/file/FILE_ID/title?node-id=DOCUMENT_ID)
+    /// List of documents ids (www.figma.com/file/FILE_ID/title?node-id=DOCUMENT_ID)
     #[structopt(short, long)]
-    pub document_id: Option<String>,
+    pub documents_ids: Option<Vec<String>>,
     /// Path where assets will be downloaded
     #[structopt(short, long, default_value = DEFAULT_PATH)]
     #[serde(default = "default_path")]
@@ -85,8 +85,8 @@ impl Cli {
         if other_cli.file_id.is_some() {
             self.file_id = other_cli.file_id;
         }
-        if other_cli.document_id.is_some() {
-            self.document_id = other_cli.document_id;
+        if other_cli.documents_ids.is_some() {
+            self.documents_ids = other_cli.documents_ids;
         }
         if other_cli.opt_png_level.is_some() {
             self.opt_png_level = other_cli.opt_png_level;
@@ -272,7 +272,7 @@ mod tests {
         Cli {
             personal_access_token: None,
             file_id: None,
-            document_id: None,
+            documents_ids: None,
             path: "".to_string(),
             file_scales: vec![1],
             file_extensions: vec![DEFAULT_FILE_EXT.to_owned()],
@@ -374,11 +374,11 @@ mod tests {
         let mut cli = build_default_cli();
         let mut other = build_default_cli();
 
-        other.document_id = Some("x".to_string());
+        other.documents_ids = Some(vec!["x".to_string()]);
         cli.add_non_defaults(other);
 
-        assert!(cli.document_id.is_some());
-        assert_eq!(cli.document_id, Some("x".to_string()));
+        assert!(cli.documents_ids.is_some());
+        assert_eq!(cli.documents_ids, Some(vec!["x".to_string()]));
     }
 
     #[test]
