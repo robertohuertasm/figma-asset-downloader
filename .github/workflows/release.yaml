@@ -39,7 +39,7 @@ jobs:
           cargo build --release
           ls -la target/release
       - name: Applying upx
-        uses: svenstaro/upx-action@v1-release
+        uses: svenstaro/upx-action@v2
         with:
           file: target/release/${{ matrix.artifact_name }}
       - name: Zipping the artifact
