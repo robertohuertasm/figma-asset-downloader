@@ -108,18 +108,21 @@ async fn main() -> anyhow::Result<()> {
             )
             .await;
 
-            download_images(&images, &client, &download_path)
+            let images_to_process = get_images_info_to_process(
+                &images,
+                &download_path,
+                cli.download_only_unexisting_in_folder,
+            )
+            .await;
+
+            download_images(&images_to_process, &client)
                 .await
                 .expect("Error downloading");
             // optimizations doesn't seem to work with threads/futures
             if !cli.opt_only_on_validation {
-                for img in images {
-                    let path = if img.scale == 1 {
-                        download_path.to_owned()
-                    } else {
-                        download_path.join(format!("{}.0x", img.scale))
-                    };
-                    let final_path = path.join(format!("{}.{}", img.name.trim(), img.format));
+                for img_info in images_to_process {
+                    let img = img_info.0;
+                    let final_path = img_info.1;
                     if let Err(e) = optimize_image(
                         &final_path,
                         &img.format,
@@ -375,42 +378,55 @@ fn to_images(frames: &[Node], urls: &ImageUrlCollection, scale: usize, format: &
         .collect()
 }
 
-async fn download_images(
-    images: &[Image],
-    client: &Client,
-    download_path: &PathBuf,
-) -> anyhow::Result<()> {
-    println!(
-        "{}  {}",
-        DOWN,
-        style("Downloading images...").bold().green()
-    );
-    let futures = images.iter().map(move |i| async move {
-        let bytes = client.get(&i.url).send().await?.bytes().await?;
+async fn get_images_info_to_process<'a>(
+    images: &'a [Image],
+    download_path: &'a PathBuf,
+    download_only_unexisting_in_folder: bool,
+) -> Vec<(&'a Image, PathBuf)> {
+    let mut images_to_process: Vec<(&Image, PathBuf)> = vec![];
+    for i in images {
         let path = if i.scale == 1 {
             download_path.to_owned()
         } else {
             download_path.join(format!("{}.0x", i.scale))
         };
         let final_path = path.join(format!("{}.{}", i.name.trim(), i.format));
-        match tokio::fs::File::create(&final_path).await {
+
+        if !download_only_unexisting_in_folder {
+            images_to_process.push((i, final_path))
+        } else {
+            let file_exists = tokio::fs::metadata(&final_path).await.is_ok();
+            if !file_exists {
+                images_to_process.push((i, final_path));
+            }
+        }
+    }
+    images_to_process
+}
+
+async fn download_images(images: &[(&Image, PathBuf)], client: &Client) -> anyhow::Result<()> {
+    println!(
+        "{}  {}",
+        DOWN,
+        style("Downloading images...").bold().green()
+    );
+    let futures = images.iter().map(move |i| async move {
+        let bytes = client.get(&i.0.url).send().await?.bytes().await?;
+        match tokio::fs::File::create(&i.1).await {
             Ok(mut file) => {
                 if let Err(e) = file.write_all(&bytes).await {
-                    println!("{} Error writing image {:?} => {:?}", ERROR, &final_path, e);
+                    println!("{} Error writing image {:?} => {:?}", ERROR, i.1, e);
                 } else {
                     println!(
                         "{} {} {:?}",
                         LINK,
                         style("Image Downloaded").blue().bold(),
-                        &final_path
+                        i.1
                     );
                 }
             }
             Err(e) => {
-                println!(
-                    "{} Error creating image {:?} => {:?}",
-                    ERROR, &final_path, e
-                );
+                println!("{} Error creating image {:?} => {:?}", ERROR, i.1, e);
             }
         }
         Ok::<(), anyhow::Error>(())
