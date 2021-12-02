@@ -122,12 +122,7 @@ async fn main() -> anyhow::Result<()> {
             if !cli.opt_only_on_validation {
                 for img_info in images_to_process {
                     let img = img_info.0;
-                    let path = if img.scale == 1 {
-                        download_path.to_owned()
-                    } else {
-                        download_path.join(format!("{}.0x", img.scale))
-                    };
-                    let final_path = path.join(format!("{}.{}", img.name.trim(), img.format));
+                    let final_path = img_info.1;
                     if let Err(e) = optimize_image(
                         &final_path,
                         &img.format,
