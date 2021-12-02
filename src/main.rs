@@ -8,7 +8,7 @@ use reqwest::{header, Client};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 use structopt::StructOpt;
-use tokio::prelude::*;
+use tokio::io::AsyncWriteExt;
 
 mod emojis;
 mod manifest_checker;
