@@ -202,7 +202,7 @@ pub struct Document {
     pub document: Node,
 }
 
-#[allow(non_camel_case_types)]
+#[allow(non_camel_case_types, clippy::upper_case_acronyms)]
 #[derive(Debug, Deserialize, Clone, PartialEq)]
 pub enum NodeType {
     DOCUMENT,

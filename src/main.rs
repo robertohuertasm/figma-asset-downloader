@@ -14,7 +14,6 @@ mod emojis;
 mod manifest_checker;
 mod models;
 
-#[allow(clippy::filter_map)]
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let start = Instant::now();
@@ -210,7 +209,7 @@ fn get_client(token: &str) -> Result<Client, reqwest::Error> {
 
 async fn get_frames(
     file_id: &str,
-    document_ids: &Vec<String>,
+    document_ids: &[String],
     client: &Client,
 ) -> anyhow::Result<Option<Frames>> {
     let mut frames: Frames = vec![];
@@ -399,7 +398,7 @@ fn to_images(frames: &[Node], urls: &ImageUrlCollection, scale: usize, format: &
 
 async fn get_images_info_to_process<'a>(
     images: &'a [Image],
-    download_path: &'a PathBuf,
+    download_path: &'a Path,
     download_only_unexisting_in_folder: bool,
 ) -> Vec<(&'a Image, PathBuf)> {
     let mut images_to_process: Vec<(&Image, PathBuf)> = vec![];
@@ -464,7 +463,7 @@ fn optimize_image(
     match extension {
         "jpg" => {
             if let Some(lvl) = opt_jpg_level {
-                print_optimizing_image(&path);
+                print_optimizing_image(path);
                 let img = image::open(path)?;
                 let dim = image::image_dimensions(path)?;
                 let mut fw = std::fs::File::create(path)?;
@@ -474,7 +473,7 @@ fn optimize_image(
         }
         "png" => {
             if let Some(lvl) = opt_png_level {
-                print_optimizing_image(&path);
+                print_optimizing_image(path);
                 let inf = oxipng::InFile::from(path);
                 let ouf = oxipng::OutFile::Path(Some(path.into()));
                 let opts = oxipng::Options::from_preset(lvl);
