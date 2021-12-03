@@ -48,11 +48,11 @@ impl From<std::io::Error> for ManifestError {
 #[async_trait]
 pub trait ManifestReader {
     async fn read_manifest(&self) -> Result<Manifest, ManifestError>;
-    async fn read_assets(&self, assets_dir_path: &PathBuf) -> Result<Vec<String>, ManifestError>;
+    async fn read_assets(&self, assets_dir_path: &Path) -> Result<Vec<String>, ManifestError>;
 }
 
 pub struct TokioManifestReader<'a> {
-    manifest_path: &'a PathBuf,
+    manifest_path: &'a Path,
 }
 
 #[async_trait]
@@ -62,7 +62,7 @@ impl ManifestReader for TokioManifestReader<'_> {
         let manifest = toml::from_str(&manifest_str)?;
         Ok(manifest)
     }
-    async fn read_assets(&self, assets_dir_path: &PathBuf) -> Result<Vec<String>, ManifestError> {
+    async fn read_assets(&self, assets_dir_path: &Path) -> Result<Vec<String>, ManifestError> {
         let mut all_files: Vec<String> = vec![];
         let walk_result = ScanDir::files().walk(assets_dir_path, |wlkr| {
             for (entry, _) in wlkr {
@@ -96,9 +96,7 @@ impl<T: ManifestReader> ManifestChecker<T> {
         Self { reader }
     }
 
-    pub fn with_tokio_reader<'a>(
-        manifest_path: &'a PathBuf,
-    ) -> ManifestChecker<TokioManifestReader<'a>> {
+    pub fn with_tokio_reader(manifest_path: &Path) -> ManifestChecker<TokioManifestReader> {
         ManifestChecker::new(TokioManifestReader { manifest_path })
     }
 
@@ -252,7 +250,7 @@ mod tests {
             Ok(self.read_manifest_result.clone())
         }
 
-        async fn read_assets(&self, _: &PathBuf) -> Result<Vec<String>, ManifestError> {
+        async fn read_assets(&self, _: &Path) -> Result<Vec<String>, ManifestError> {
             Ok(self.read_assets_result.clone())
         }
     }
