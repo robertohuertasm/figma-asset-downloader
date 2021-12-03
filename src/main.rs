@@ -68,7 +68,7 @@ async fn main() -> anyhow::Result<()> {
                 );
             }
         }
-    } else if let (Some(token), Some(file_id), Some(document_id)) =
+    } else if let (Some(token), Some(file_id), Some(document_ids)) =
         (cli.personal_access_token, cli.file_id, cli.document_ids)
     {
         let scales = cli.file_scales;
@@ -77,7 +77,7 @@ async fn main() -> anyhow::Result<()> {
         let download_path: PathBuf = std::env::current_dir()?.join(&cli.path);
 
         let client = get_client(&token)?;
-        let frames = get_frames(&file_id, &document_id, &client).await?;
+        let frames = get_frames(&file_id, &document_ids, &client).await?;
         let images = get_images(
             &frames,
             &client,
