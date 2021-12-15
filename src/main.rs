@@ -159,7 +159,7 @@ async fn main() -> anyhow::Result<()> {
         println!(
             "{}  {}",
             ERROR,
-            style("Some arguments are missing. Check access token, file id or document id.")
+            style("Some arguments are missing. Check access token, file id or document ids.")
                 .bold()
                 .red(),
         );
