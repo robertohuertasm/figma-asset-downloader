@@ -469,6 +469,8 @@ fn optimize_image(
                 let mut fw = std::fs::File::create(path)?;
                 let mut enc = image::jpeg::JpegEncoder::new_with_quality(&mut fw, lvl);
                 enc.encode(&img.to_bytes(), dim.0, dim.1, img.color())?;
+            } else {
+                println!("Are you trying to optimize this image {:?}? Don't forget to set the --opt-jpg-level value", path);
             }
         }
         "png" => {
@@ -478,6 +480,8 @@ fn optimize_image(
                 let ouf = oxipng::OutFile::Path(Some(path.into()));
                 let opts = oxipng::Options::from_preset(lvl);
                 oxipng::optimize(&inf, &ouf, &opts)?;
+            } else {
+                println!("Are you trying to optimize this image {:?}? Don't forget to set the --opt-png-level value", path);
             }
         }
         _ => (),
