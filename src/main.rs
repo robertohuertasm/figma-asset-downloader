@@ -306,6 +306,7 @@ async fn get_images(
 
         let mut add_future_images = |image_ids, format, scale| {
             // hack: annotate type inside the closure to avoid rustc bug
+            // https://github.com/rust-lang/rust/issues/100002
             let image_ids: &str = image_ids;
 
             if !image_ids.is_empty() {
