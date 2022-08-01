@@ -1,6 +1,6 @@
 ![logo](img/logo.svg)
 
-# Figma Asset Downloader <small>0.9.0</small>
+# Figma Asset Downloader <small>0.9.1</small>
 
 > Small utility to help you optimize & download Figma assets directly to your computer.
 
