@@ -262,7 +262,7 @@ async fn get_frames(
     }
 }
 
-async fn get_images<'a>(
+async fn get_images(
     frames: &Option<Frames>,
     client: &Client,
     file_id: &str,
@@ -304,7 +304,11 @@ async fn get_images<'a>(
 
         let mut futures = vec![];
 
-        let mut add_future_images = |image_ids: &'a str, format, scale| {
+        let mut add_future_images = |image_ids, format, scale| {
+            // hack: annotate type inside the closure to avoid rustc bug
+            // https://github.com/rust-lang/rust/issues/100002
+            let image_ids: &str = image_ids;
+
             if !image_ids.is_empty() {
                 futures.push(
                     get_images_url_collection(image_ids, client, file_id, scale, format)
